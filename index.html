@@ -1929,6 +1929,7 @@
   <canvas id="confetti"></canvas>
   
   <script>
+  (function() {
     // ==================== DATA ====================
     // Video format: 
     // - id: YouTube video ID for direct embed
@@ -2140,13 +2141,13 @@
     const SUPABASE_URL = 'https://gnlilbiwyikbgrqzxqcw.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGlsYml3eWlrYmdycXp4cWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjU0MTEsImV4cCI6MjA4Mjk0MTQxMX0.sOCr0nlRPJggEtLqUwgEh2_RR4kIr-d4_Tt_dZTYKog';
     
-    let supabase = null;
+    let supabaseClient = null;
     let useSupabase = false;
     
     // Initialize Supabase if configured
     if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && typeof window.supabase !== 'undefined') {
       try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         useSupabase = true;
         console.log('✅ Supabase connected');
       } catch (e) {
@@ -2167,9 +2168,9 @@
       }
       
       // If Supabase is configured, sync from cloud
-      if (useSupabase && supabase) {
+      if (useSupabase && supabaseClient) {
         try {
-          const { data: rows, error } = await supabase
+          const { data: rows, error } = await supabaseClient
             .from('strength_levels_data')
             .select('user_key, data')
             .in('user_key', ['dad', 'mom']);
@@ -2198,10 +2199,10 @@
       }));
       
       // Sync to Supabase if configured
-      if (useSupabase && supabase && state.currentUser) {
+      if (useSupabase && supabaseClient && state.currentUser) {
         try {
           const userData = state.users[state.currentUser];
-          await supabase
+          await supabaseClient
             .from('strength_levels_data')
             .upsert({
               user_key: state.currentUser,
@@ -3468,6 +3469,7 @@
     loadData().then(() => {
       render();
     });
+  })();
   </script>
 </body>
 </html>
