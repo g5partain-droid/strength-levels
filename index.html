@@ -1,0 +1,3473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Strength Levels</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    :root {
+      --bg-deep: #0f0f1a;
+      --bg-card: #1a1a2e;
+      --bg-card-hover: #252542;
+      --accent-gold: #f4c430;
+      --accent-gold-dim: #c9a227;
+      --accent-green: #4ade80;
+      --accent-blue: #60a5fa;
+      --text-primary: #f8f8f8;
+      --text-secondary: #a0a0b0;
+      --text-muted: #606070;
+      --border: #2a2a40;
+      --success: #22c55e;
+      --celebration: #f59e0b;
+    }
+    
+    html, body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    body {
+      padding: 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .app {
+      max-width: 500px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    /* User Selection Screen */
+    .user-select {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    .user-select h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .user-select p {
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+      font-size: 1.1rem;
+    }
+    
+    .user-buttons {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .user-btn {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 140px;
+    }
+    
+    .user-btn:hover, .user-btn:active {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-gold);
+      transform: translateY(-4px);
+    }
+    
+    .user-btn .emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+    
+    .user-btn .name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    /* Main Dashboard */
+    .dashboard {
+      padding: 1rem;
+      padding-top: calc(1rem + env(safe-area-inset-top));
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+    }
+    
+    .header-left h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      color: var(--text-primary);
+    }
+    
+    .header-left .streak {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+    
+    .switch-user {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+    
+    .switch-user:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    
+    .compete-btn {
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+      border: none;
+      color: var(--bg-deep);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    
+    .compete-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(244, 196, 48, 0.3);
+    }
+    
+    .header-buttons {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    
+    /* Competition Screen */
+    .competition {
+      padding: 1rem;
+      padding-top: calc(1rem + env(safe-area-inset-top));
+    }
+    
+    .competition-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .competition-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+    }
+    
+    .back-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    
+    .vs-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .vs-card.winner-card {
+      background: linear-gradient(135deg, rgba(244, 196, 48, 0.2), rgba(244, 196, 48, 0.05));
+      border: 2px solid var(--accent-gold);
+    }
+    
+    .vs-card h3 {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+    
+    .vs-matchup {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    
+    .vs-player {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .vs-player .emoji {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    
+    .vs-player .name {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+    
+    .vs-player .score {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .vs-player.leading .score {
+      color: var(--accent-gold);
+      text-shadow: 0 0 20px rgba(244, 196, 48, 0.5);
+    }
+    
+    .vs-player.leading .emoji {
+      animation: bounce 0.6s ease infinite alternate;
+    }
+    
+    .vs-divider {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    
+    .exercise-battle {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .exercise-battle-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    
+    .exercise-battle-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .exercise-battle-icon {
+      font-size: 1.25rem;
+    }
+    
+    .battle-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .battle-bar {
+      flex: 1;
+      height: 24px;
+      background: var(--bg-deep);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      position: relative;
+    }
+    
+    .battle-bar-inner {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .battle-bar-dad {
+      background: linear-gradient(90deg, var(--accent-blue), #3b82f6);
+      border-radius: 12px 0 0 12px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .battle-bar-mom {
+      background: linear-gradient(270deg, var(--accent-green), #22c55e);
+      border-radius: 0 12px 12px 0;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding-left: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .battle-score {
+      font-size: 1.1rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: center;
+    }
+    
+    .battle-score.dad {
+      color: var(--accent-blue);
+    }
+    
+    .battle-score.mom {
+      color: var(--accent-green);
+    }
+    
+    .battle-winner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1rem;
+    }
+    
+    .weekly-winner {
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .weekly-winner .trophy {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .weekly-winner h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      color: var(--accent-gold);
+      margin-bottom: 0.5rem;
+    }
+    
+    .weekly-winner p {
+      color: var(--text-secondary);
+    }
+    
+    .all-time-record {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .all-time-player {
+      text-align: center;
+    }
+    
+    .all-time-player .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .all-time-player .wins {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .all-time-player.dad .wins {
+      color: var(--accent-blue);
+    }
+    
+    .all-time-player.mom .wins {
+      color: var(--accent-green);
+    }
+    
+    .no-data-message {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+    
+    /* Team Cards */
+    .team-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .team-card.main-card {
+      background: linear-gradient(135deg, rgba(244, 196, 48, 0.15), rgba(244, 196, 48, 0.05));
+      border: 2px solid rgba(244, 196, 48, 0.3);
+    }
+    
+    .team-card.success-card {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+      border: 2px solid rgba(74, 222, 128, 0.3);
+    }
+    
+    .team-card.heart-card {
+      background: linear-gradient(135deg, rgba(244, 114, 182, 0.1), rgba(244, 114, 182, 0.05));
+      border: 1px solid rgba(244, 114, 182, 0.2);
+    }
+    
+    .team-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    
+    .team-icon {
+      font-size: 1.25rem;
+    }
+    
+    /* Team Power */
+    .team-power-display {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.25rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .team-power-number {
+      font-family: 'DM Serif Display', serif;
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      line-height: 1;
+    }
+    
+    .team-power-max {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+    }
+    
+    .team-power-bar {
+      height: 12px;
+      background: var(--bg-deep);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    .team-power-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-gold), #f59e0b);
+      border-radius: 6px;
+      transition: width 0.5s ease;
+    }
+    
+    .team-power-breakdown {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    
+    .breakdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .breakdown-emoji {
+      font-size: 1.5rem;
+    }
+    
+    .breakdown-name {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    
+    .breakdown-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .breakdown-plus {
+      color: var(--text-muted);
+      font-size: 1.25rem;
+    }
+    
+    /* Weekly Check-in */
+    .weekly-checkin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .checkin-person {
+      text-align: center;
+    }
+    
+    .checkin-avatar {
+      font-size: 2.5rem;
+      margin-bottom: 0.25rem;
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+    
+    .checkin-person.done .checkin-avatar {
+      opacity: 1;
+    }
+    
+    .checkin-status {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    
+    .checkin-person.done .checkin-status {
+      color: var(--accent-green);
+    }
+    
+    .checkin-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    
+    .checkin-connector {
+      color: var(--text-muted);
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+    }
+    
+    .checkin-connector.connected {
+      font-size: 1.5rem;
+      letter-spacing: 0;
+      animation: pulse-heart 1s ease infinite;
+    }
+    
+    @keyframes pulse-heart {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    
+    .checkin-message {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    
+    /* Partner Card */
+    .partner-status {
+      text-align: center;
+      padding: 0.75rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    
+    .partner-status.great {
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--accent-green);
+    }
+    
+    .partner-status.good {
+      background: rgba(96, 165, 250, 0.15);
+      color: var(--accent-blue);
+    }
+    
+    .partner-status.nudge {
+      background: rgba(244, 196, 48, 0.15);
+      color: var(--accent-gold);
+    }
+    
+    .partner-status.waiting {
+      background: var(--bg-deep);
+      color: var(--text-secondary);
+    }
+    
+    .cheer-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      border: none;
+      color: white;
+      padding: 1rem;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    
+    .cheer-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+    }
+    
+    .cheer-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .cheer-emoji {
+      font-size: 1.25rem;
+    }
+    
+    .cheer-sent {
+      display: none;
+      text-align: center;
+      padding: 1rem;
+      color: var(--accent-gold);
+      font-size: 0.9rem;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .cheer-sent.show {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Together Stats */
+    .together-stats {
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .together-stat {
+      text-align: center;
+    }
+    
+    .together-stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+    
+    .together-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      max-width: 120px;
+    }
+    
+    /* Milestones */
+    .milestones-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .milestone {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg-deep);
+      border-radius: 12px;
+      opacity: 0.6;
+    }
+    
+    .milestone.achieved {
+      opacity: 1;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+    
+    .milestone-icon {
+      font-size: 1.5rem;
+      min-width: 40px;
+      text-align: center;
+    }
+    
+    .milestone-info {
+      flex: 1;
+    }
+    
+    .milestone-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+    
+    .milestone-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.125rem;
+    }
+    
+    .milestone-progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    
+    .milestone-progress-fill {
+      height: 100%;
+      background: var(--accent-gold);
+      border-radius: 2px;
+    }
+    
+    .milestone-check {
+      color: var(--accent-green);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    
+    /* Why This Matters */
+    .why-matters {
+      text-align: center;
+      padding: 0.5rem;
+    }
+    
+    .heart-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .why-matters p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+    
+    .why-matters .tagline {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-style: italic;
+    }
+    
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .partner-badge {
+      text-align: center;
+      padding: 0.625rem 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .partner-badge.active {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
+      color: var(--accent-green);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+    
+    .partner-badge.recent {
+      background: rgba(96, 165, 250, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .stat-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+    
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+    
+    /* Exercise Cards */
+    .exercises {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .exercise-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 1.25rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    
+    .exercise-card:hover {
+      background: var(--bg-card-hover);
+    }
+    
+    .exercise-card.expanded {
+      border-color: var(--accent-gold);
+    }
+    
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .exercise-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .exercise-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .exercise-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .exercise-level {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    
+    .exercise-stars {
+      display: flex;
+      gap: 0.25rem;
+    }
+    
+    .star {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+    
+    .star.filled {
+      color: var(--accent-gold);
+      text-shadow: 0 0 10px var(--accent-gold);
+    }
+    
+    /* Expanded Exercise View */
+    .exercise-details {
+      display: none;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .exercise-card.expanded .exercise-details {
+      display: block;
+    }
+    
+    .current-movement {
+      background: var(--bg-deep);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .current-movement .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    
+    .current-movement .movement {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    .watch-video-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      text-decoration: none;
+      padding: 0.875rem;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .watch-video-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    .watch-video-btn span {
+      font-size: 0.875rem;
+    }
+    
+    .tip-box {
+      background: rgba(244, 196, 48, 0.1);
+      border: 1px solid rgba(244, 196, 48, 0.3);
+      border-radius: 12px;
+      padding: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    
+    .tip-label {
+      font-size: 0.75rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+    }
+    
+    .tip-text {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+    
+    .golf-benefit {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(74, 222, 128, 0.1);
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: var(--accent-green);
+    }
+    
+    .next-level-preview {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .next-level-preview .next-label {
+      color: var(--text-muted);
+    }
+    
+    .max-level-badge {
+      color: var(--accent-gold);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .log-workout-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+      color: var(--bg-deep);
+      border: none;
+      padding: 1rem;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .log-workout-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px rgba(244, 196, 48, 0.3);
+    }
+    
+    .log-workout-btn:active {
+      transform: scale(0.98);
+    }
+    
+    /* Level Up Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 2.5rem;
+      text-align: center;
+      max-width: 350px;
+      width: 100%;
+      animation: modalPop 0.4s ease;
+    }
+    
+    @keyframes modalPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .modal .celebration-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounce 0.6s ease infinite alternate;
+    }
+    
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+    
+    .modal h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-gold), var(--celebration));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .modal p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    
+    .modal .new-level {
+      background: var(--bg-deep);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+    
+    .modal .close-btn {
+      background: var(--accent-gold);
+      color: var(--bg-deep);
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    /* Confetti Canvas */
+    #confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 200;
+    }
+    
+    /* Today's Workout Button */
+    .start-workout-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--success), #16a34a);
+      color: white;
+      border: none;
+      padding: 1.25rem;
+      border-radius: 16px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+    
+    .start-workout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+    }
+    
+    /* Workout Session */
+    .workout-session {
+      display: none;
+    }
+    
+    .workout-session.active {
+      display: block;
+    }
+    
+    .workout-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border-radius: 20px;
+    }
+    
+    .workout-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .workout-progress {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .workout-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s;
+    }
+    
+    .workout-dot.done {
+      background: var(--accent-gold);
+      box-shadow: 0 0 8px var(--accent-gold);
+    }
+    
+    .workout-dot.current {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      transform: scale(1.2);
+    }
+    
+    .current-exercise-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .current-exercise-card .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .current-exercise-card h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .current-exercise-card .movement-name {
+      color: var(--accent-gold);
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .sets-tracker {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    
+    .set-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--bg-deep);
+      border: 3px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .set-circle:hover {
+      border-color: var(--text-secondary);
+    }
+    
+    .set-circle.completed {
+      background: var(--accent-gold);
+      border-color: var(--accent-gold);
+      color: var(--bg-deep);
+      animation: setComplete 0.4s ease;
+    }
+    
+    @keyframes setComplete {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    .reps-info {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .watch-video-btn-small {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin: 0.75rem 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .watch-video-btn-small:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+    
+    .workout-tip {
+      color: var(--accent-gold);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(244, 196, 48, 0.1);
+      border-radius: 8px;
+      display: inline-block;
+    }
+    
+    .next-exercise-btn {
+      width: 100%;
+      background: var(--accent-gold);
+      color: var(--bg-deep);
+      border: none;
+      padding: 1.25rem;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      opacity: 0.5;
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+    
+    .next-exercise-btn.ready {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .next-exercise-btn.ready:hover {
+      transform: scale(1.02);
+    }
+    
+    .finish-workout-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--success), #16a34a);
+      color: white;
+      border: none;
+      padding: 1.25rem;
+      border-radius: 14px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    
+    .end-session-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    /* Pulse animation for active elements */
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(244, 196, 48, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(244, 196, 48, 0); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    /* Assessment Styles */
+    .assessment {
+      min-height: 100vh;
+      padding: 1rem;
+      padding-bottom: 2rem;
+    }
+    
+    .assessment-intro {
+      text-align: center;
+      padding: 2rem 1rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .intro-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .assessment-intro h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+    
+    .assessment-intro p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    
+    .intro-tips {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+    
+    .intro-tip {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    
+    .intro-tip:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .tip-icon {
+      font-size: 1.25rem;
+    }
+    
+    .assessment-start-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+      border: none;
+      color: var(--bg-deep);
+      font-size: 1.125rem;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: all 0.2s;
+    }
+    
+    .assessment-start-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px rgba(244, 196, 48, 0.3);
+    }
+    
+    .assessment-header {
+      margin-bottom: 1.5rem;
+    }
+    
+    .assessment-progress-bar {
+      height: 6px;
+      background: var(--bg-card);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    
+    .assessment-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .assessment-progress-text {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    
+    .assessment-exercise {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .assessment-exercise-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .assessment-icon {
+      font-size: 3rem;
+    }
+    
+    .assessment-exercise-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    
+    .assessment-level-label {
+      color: var(--accent-blue);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    
+    .assessment-current-level {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .assessment-current-level h3 {
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .assessment-tip {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .assessment-video-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      background: var(--bg-card);
+      border: 2px solid var(--accent-blue);
+      color: var(--accent-blue);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 1rem;
+      border-radius: 14px;
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .assessment-video-btn:hover {
+      background: rgba(96, 165, 250, 0.1);
+    }
+    
+    .assessment-instruction {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(244, 196, 48, 0.1);
+      border-radius: 14px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .instruction-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .assessment-instruction p {
+      color: var(--text-primary);
+      font-size: 1rem;
+      margin: 0;
+    }
+    
+    .assessment-cue {
+      color: var(--text-secondary) !important;
+      font-size: 0.9rem !important;
+      margin-top: 0.5rem !important;
+    }
+    
+    .assessment-question {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    
+    .assessment-question p {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      font-weight: 500;
+    }
+    
+    .assessment-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .assessment-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      background: var(--bg-card);
+      border: 2px solid transparent;
+      padding: 1rem 1.25rem;
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    
+    .assessment-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .assessment-btn .btn-emoji {
+      font-size: 1.75rem;
+    }
+    
+    .assessment-btn .btn-text {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: block;
+    }
+    
+    .assessment-btn .btn-subtext {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 0.125rem;
+    }
+    
+    .assessment-btn.too-hard {
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .assessment-btn.too-hard:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+    
+    .assessment-btn.just-right {
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+    
+    .assessment-btn.just-right:hover:not(:disabled) {
+      background: rgba(74, 222, 128, 0.1);
+      border-color: rgba(74, 222, 128, 0.5);
+    }
+    
+    .assessment-btn.too-easy {
+      border-color: rgba(96, 165, 250, 0.3);
+    }
+    
+    .assessment-btn.too-easy:hover:not(:disabled) {
+      background: rgba(96, 165, 250, 0.1);
+      border-color: rgba(96, 165, 250, 0.5);
+    }
+    
+    .assessment-back-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: 1rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    
+    .assessment-back-btn:hover {
+      color: var(--text-secondary);
+    }
+    
+    /* Assessment Complete */
+    .assessment-complete {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+    
+    .complete-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .assessment-complete h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .assessment-complete > p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    
+    .assessment-results {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    
+    .result-icon {
+      font-size: 1.5rem;
+    }
+    
+    .result-info {
+      text-align: left;
+    }
+    
+    .result-name {
+      display: block;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+    
+    .result-level {
+      display: block;
+      color: var(--accent-green);
+      font-size: 0.8rem;
+      margin-top: 0.125rem;
+    }
+    
+    .assessment-note {
+      background: rgba(96, 165, 250, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .assessment-note p {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    
+    .assessment-note p + p {
+      margin-top: 0.5rem;
+    }
+    
+    .assessment-done-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-green), #22c55e);
+      border: none;
+      color: white;
+      font-size: 1.125rem;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .assessment-done-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+    }
+    
+    /* Reassess Button */
+    .reassess-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      padding: 0.875rem;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: all 0.2s;
+    }
+    
+    .reassess-btn:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+    
+    /* Video Modal */
+    .video-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .video-modal {
+      background: var(--bg-card);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .video-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .video-modal-header h3 {
+      font-size: 1.125rem;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    
+    .video-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      line-height: 1;
+    }
+    
+    .video-close-btn:hover {
+      color: var(--text-primary);
+    }
+    
+    .video-modal-body-link {
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    
+    .video-play-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .video-modal-body-link h4 {
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      margin: 0 0 0.75rem 0;
+    }
+    
+    .video-modal-body-link > p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    
+    .video-source {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem !important;
+    }
+    
+    .open-youtube-btn-large {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      text-decoration: none;
+      padding: 1rem;
+      border-radius: 14px;
+      font-size: 1.125rem;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    
+    .open-youtube-btn-large:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+    }
+    
+    .video-modal-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .video-done-btn {
+      width: 100%;
+      background: var(--accent-green);
+      border: none;
+      color: white;
+      padding: 0.875rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .video-done-btn:hover {
+      filter: brightness(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+  <canvas id="confetti"></canvas>
+  
+  <script>
+    // ==================== DATA ====================
+    // Video format: 
+    // - id: YouTube video ID for direct embed
+    // - search: fallback search query if no ID available
+    // You can update these IDs anytime by finding better videos!
+    const EXERCISES = [
+      {
+        id: 'squat',
+        name: 'Squat',
+        icon: '🦵',
+        levels: [
+          'Chair sit-to-stand (use hands)',
+          'Chair squat (no hands)',
+          'Bodyweight squat',
+          'Goblet squat'
+        ],
+        videos: [
+          { search: 'chair sit to stand exercise seniors HASfit', title: 'Chair Sit-to-Stand', channel: 'Search: HASfit' },
+          { search: 'chair squat no hands seniors', title: 'Chair Squat', channel: 'Search: Best Results' },
+          { search: 'bodyweight squat proper form seniors Bob Brad', title: 'Bodyweight Squat', channel: 'Search: Bob & Brad' },
+          { search: 'goblet squat kettlebell beginner form', title: 'Goblet Squat', channel: 'Search: Best Results' }
+        ],
+        tips: [
+          'Nose over toes, push through heels',
+          'Cross arms over chest for balance',
+          'Sit back like into an invisible chair',
+          'Hold weight at chest, elbows down'
+        ],
+        golfBenefit: 'Stronger legs = more stable swing base',
+        assessmentCue: 'Can you do 5 in a row with good balance?'
+      },
+      {
+        id: 'push',
+        name: 'Push',
+        icon: '💪',
+        levels: [
+          'Wall push-up',
+          'Incline push-up (counter)',
+          'Knee push-up',
+          'Full push-up'
+        ],
+        videos: [
+          { search: 'wall pushup proper form seniors National Institute Aging', title: 'Wall Push-Up', channel: 'Search: NIA' },
+          { search: 'incline pushup counter kitchen beginner', title: 'Incline Push-Up', channel: 'Search: Best Results' },
+          { search: 'knee pushup proper form beginner', title: 'Knee Push-Up', channel: 'Search: Best Results' },
+          { search: 'pushup proper form physical therapist beginner', title: 'Full Push-Up', channel: 'Search: Best Results' }
+        ],
+        tips: [
+          'Elbows at 45° (make an A, not a T)',
+          'Keep body straight, don\'t sag hips',
+          'Lower chest toward surface',
+          'Full range, chest nearly to floor'
+        ],
+        golfBenefit: 'Upper body strength for club control',
+        assessmentCue: 'Can you do 5 with your body staying straight?'
+      },
+      {
+        id: 'pull',
+        name: 'Pull',
+        icon: '🎯',
+        levels: [
+          'Band pull-apart',
+          'Band row',
+          'TRX / Ring row',
+          'Dumbbell row'
+        ],
+        videos: [
+          { search: 'resistance band pull apart Bob Brad seniors', title: 'Band Pull-Apart', channel: 'Search: Bob & Brad' },
+          { search: 'seated resistance band row seniors beginner', title: 'Band Row', channel: 'Search: Best Results' },
+          { search: 'TRX row beginner form bodyweight', title: 'TRX Row', channel: 'Search: Best Results' },
+          { search: 'dumbbell row one arm proper form beginner', title: 'Dumbbell Row', channel: 'Search: Best Results' }
+        ],
+        tips: [
+          'Squeeze shoulder blades together',
+          'Pull to waist, chest up',
+          'Keep body straight as you pull',
+          'Row to hip, don\'t twist torso'
+        ],
+        golfBenefit: 'Better posture & backswing power',
+        assessmentCue: 'Can you do 5 while keeping your back flat?'
+      },
+      {
+        id: 'hinge',
+        name: 'Hinge',
+        icon: '🔄',
+        levels: [
+          'Good morning (hands on thighs)',
+          'Romanian deadlift (no weight)',
+          'RDL with band',
+          'RDL with dumbbells'
+        ],
+        videos: [
+          { search: 'hip hinge exercise beginner seniors Bob Brad', title: 'Hip Hinge', channel: 'Search: Bob & Brad' },
+          { search: 'romanian deadlift bodyweight no weight beginner', title: 'RDL (No Weight)', channel: 'Search: Best Results' },
+          { search: 'romanian deadlift resistance band form', title: 'RDL with Band', channel: 'Search: Best Results' },
+          { search: 'dumbbell romanian deadlift proper form beginner', title: 'RDL with Dumbbells', channel: 'Search: Best Results' }
+        ],
+        tips: [
+          'Push hips BACK, slight knee bend',
+          'Feel stretch in hamstrings',
+          'Keep back flat, chest proud',
+          'Weights stay close to legs'
+        ],
+        golfBenefit: 'Protects lower back, adds hip power',
+        assessmentCue: 'Can you feel the stretch in your hamstrings?'
+      },
+      {
+        id: 'core',
+        name: 'Core',
+        icon: '🎖️',
+        levels: [
+          'Dead bug (bent knees)',
+          'Dead bug (extended)',
+          'Plank (knees)',
+          'Plank (full)'
+        ],
+        videos: [
+          { search: 'dead bug exercise beginner seniors physical therapy', title: 'Dead Bug (Beginner)', channel: 'Search: PT Videos' },
+          { search: 'dead bug exercise extended leg arm', title: 'Dead Bug Extended', channel: 'Search: Best Results' },
+          { search: 'knee plank proper form beginner seniors', title: 'Knee Plank', channel: 'Search: Best Results' },
+          { search: 'forearm plank proper form beginner', title: 'Forearm Plank', channel: 'Search: Best Results' }
+        ],
+        tips: [
+          'Press lower back into floor',
+          'Move slow, opposite arm/leg',
+          'Straight line from head to knees',
+          'Don\'t let hips sag or pike'
+        ],
+        golfBenefit: 'Core stability for rotation & power',
+        assessmentCue: 'Can you keep your back flat on the floor?'
+      },
+      {
+        id: 'balance',
+        name: 'Balance',
+        icon: '⚖️',
+        levels: [
+          'Single leg stand (wall touch)',
+          'Single leg stand (free)',
+          'Single leg (eyes closed)',
+          'Single leg RDL'
+        ],
+        videos: [
+          { search: 'single leg stand balance seniors wall support', title: 'Single Leg Stand (Wall)', channel: 'Search: Best Results' },
+          { search: 'single leg balance exercise seniors physical therapy', title: 'Single Leg Stand', channel: 'Search: PT Videos' },
+          { search: 'single leg balance eyes closed challenge', title: 'Eyes Closed Balance', channel: 'Search: Best Results' },
+          { search: 'single leg deadlift beginner balance no weight', title: 'Single Leg RDL', channel: 'Search: Best Results' }
+        ],
+        tips: [
+          'Fingertip touch only, gaze fixed',
+          'Arms out for balance if needed',
+          'Start near wall for safety',
+          'Hinge forward like picking up ball'
+        ],
+        golfBenefit: 'Prevents falls, improves swing balance',
+        assessmentCue: 'Can you hold for 10 seconds without wobbling?'
+      }
+    ];
+
+    const DEFAULT_USER_DATA = {
+      name: '',
+      streak: 0,
+      lastWorkout: null,
+      totalWorkouts: 0,
+      exercises: {}
+    };
+
+    // Initialize default exercise data
+    EXERCISES.forEach(ex => {
+      DEFAULT_USER_DATA.exercises[ex.id] = {
+        level: 1,
+        stars: 0
+      };
+    });
+
+    // ==================== STATE ====================
+    let state = {
+      currentUser: null,
+      users: {
+        dad: null,
+        mom: null
+      },
+      expandedExercise: null,
+      inWorkout: false,
+      workoutIndex: 0,
+      workoutSets: [false, false, false],
+      showModal: false,
+      modalData: null,
+      showCompetition: false,
+      // Assessment state
+      inAssessment: false,
+      assessmentIndex: 0,  // which exercise we're assessing (0-5)
+      assessmentLevel: 0,  // which level we're testing (0-3)
+      assessmentResults: {}, // stores the determined level for each exercise
+      assessmentIntroSeen: false, // track if intro was shown
+      // Video modal
+      showVideoModal: false,
+      videoData: null
+    };
+
+    // ==================== SUPABASE CONFIG ====================
+    // TODO: Replace these with your Supabase project credentials
+    // 1. Go to supabase.com and create a free project
+    // 2. Go to Settings > API and copy the URL and anon key
+    // 3. Create a table called 'user_data' with columns:
+    //    - id (uuid, primary key, default: gen_random_uuid())
+    //    - user_key (text, unique) 
+    //    - data (jsonb)
+    //    - updated_at (timestamp with time zone, default: now())
+    const SUPABASE_URL = 'https://gnlilbiwyikbgrqzxqcw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubGlsYml3eWlrYmdycXp4cWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjU0MTEsImV4cCI6MjA4Mjk0MTQxMX0.sOCr0nlRPJggEtLqUwgEh2_RR4kIr-d4_Tt_dZTYKog';
+    
+    let supabase = null;
+    let useSupabase = false;
+    
+    // Initialize Supabase if configured
+    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && typeof window.supabase !== 'undefined') {
+      try {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        useSupabase = true;
+        console.log('✅ Supabase connected');
+      } catch (e) {
+        console.warn('Supabase init failed, using localStorage:', e);
+      }
+    } else {
+      console.log('ℹ️ Using localStorage (Supabase not configured)');
+    }
+
+    // ==================== STORAGE ====================
+    // Load data - tries Supabase first, falls back to localStorage
+    async function loadData() {
+      // Always load from localStorage first (fast, works offline)
+      const saved = localStorage.getItem('strengthLevels');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state.users = parsed.users || { dad: null, mom: null };
+      }
+      
+      // If Supabase is configured, sync from cloud
+      if (useSupabase && supabase) {
+        try {
+          const { data: rows, error } = await supabase
+            .from('strength_levels_data')
+            .select('user_key, data')
+            .in('user_key', ['dad', 'mom']);
+          
+          if (!error && rows) {
+            rows.forEach(row => {
+              if (row.data) {
+                state.users[row.user_key] = row.data;
+              }
+            });
+            // Update localStorage with cloud data
+            localStorage.setItem('strengthLevels', JSON.stringify({ users: state.users }));
+            console.log('✅ Synced from Supabase');
+          }
+        } catch (e) {
+          console.warn('Supabase load failed:', e);
+        }
+      }
+    }
+
+    // Save data - saves to localStorage immediately, syncs to Supabase in background
+    async function saveData() {
+      // Always save to localStorage immediately
+      localStorage.setItem('strengthLevels', JSON.stringify({
+        users: state.users
+      }));
+      
+      // Sync to Supabase if configured
+      if (useSupabase && supabase && state.currentUser) {
+        try {
+          const userData = state.users[state.currentUser];
+          await supabase
+            .from('strength_levels_data')
+            .upsert({
+              user_key: state.currentUser,
+              data: userData,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'user_key'
+            });
+          console.log('✅ Saved to Supabase');
+        } catch (e) {
+          console.warn('Supabase save failed (data saved locally):', e);
+        }
+      }
+    }
+
+    function getUser() {
+      return state.users[state.currentUser];
+    }
+
+    function updateUser(updates) {
+      state.users[state.currentUser] = {
+        ...getUser(),
+        ...updates
+      };
+      saveData();
+    }
+
+    // ==================== AUDIO ====================
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioCtx();
+      }
+    }
+
+    function playTone(frequency, duration, type = 'sine', volume = 0.3) {
+      if (!audioCtx) return;
+      
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = type;
+      
+      gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + duration);
+    }
+
+    function playSetComplete() {
+      initAudio();
+      playTone(880, 0.15, 'sine', 0.4);
+      setTimeout(() => playTone(1100, 0.15, 'sine', 0.4), 100);
+    }
+
+    function playStarEarned() {
+      initAudio();
+      playTone(523, 0.1, 'sine', 0.3);
+      setTimeout(() => playTone(659, 0.1, 'sine', 0.3), 100);
+      setTimeout(() => playTone(784, 0.15, 'sine', 0.3), 200);
+    }
+
+    function playLevelUp() {
+      initAudio();
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, 0.2, 'sine', 0.4), i * 150);
+      });
+    }
+
+    function playWorkoutComplete() {
+      initAudio();
+      const notes = [392, 523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, 0.25, 'triangle', 0.35), i * 120);
+      });
+    }
+
+    // ==================== CONFETTI ====================
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let confettiPieces = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function createConfetti(x, y, count = 50) {
+      const colors = ['#f4c430', '#4ade80', '#60a5fa', '#f59e0b', '#ec4899'];
+      for (let i = 0; i < count; i++) {
+        confettiPieces.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 15,
+          vy: (Math.random() - 0.7) * 15,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 8 + 4,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 10,
+          life: 1
+        });
+      }
+      if (confettiPieces.length === count) {
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      confettiPieces = confettiPieces.filter(p => p.life > 0);
+      
+      confettiPieces.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.5; // gravity
+        p.rotation += p.rotationSpeed;
+        p.life -= 0.015;
+        
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+      });
+      
+      if (confettiPieces.length > 0) {
+        requestAnimationFrame(animateConfetti);
+      }
+    }
+
+    function celebrateCenter() {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 3;
+      createConfetti(centerX, centerY, 80);
+    }
+
+    // ==================== RENDER ====================
+    function render() {
+      const app = document.getElementById('app');
+      
+      if (!state.currentUser) {
+        app.innerHTML = renderUserSelect();
+      } else if (state.inAssessment) {
+        app.innerHTML = renderAssessment();
+      } else if (state.showCompetition) {
+        app.innerHTML = renderCompetition();
+      } else if (state.inWorkout) {
+        app.innerHTML = renderWorkoutSession();
+      } else {
+        app.innerHTML = renderDashboard();
+      }
+      
+      if (state.showModal) {
+        app.innerHTML += renderModal();
+      }
+      
+      if (state.showVideoModal && state.videoData) {
+        app.innerHTML += renderVideoModal();
+      }
+      
+      attachEventListeners();
+    }
+    
+    function renderVideoModal() {
+      const video = state.videoData;
+      
+      // Get the URL - either direct video or search
+      let youtubeUrl;
+      if (video.id) {
+        youtubeUrl = `https://www.youtube.com/watch?v=${video.id}${video.startTime ? '&t=' + video.startTime : ''}`;
+      } else {
+        youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(video.search)}`;
+      }
+      
+      return `
+        <div class="video-modal-overlay" id="videoModalOverlay">
+          <div class="video-modal">
+            <div class="video-modal-header">
+              <h3>📺 ${video.title || 'Exercise Demo'}</h3>
+              <button class="video-close-btn" id="closeVideoModal">✕</button>
+            </div>
+            <div class="video-modal-body-link">
+              <div class="video-play-icon">▶️</div>
+              <h4>Watch Proper Form</h4>
+              <p>Opens YouTube with the best tutorial videos for this exercise. Pick any video that looks good!</p>
+              ${video.channel ? `<p class="video-source">Tip: Look for <strong>${video.channel.replace('Search: ', '')}</strong></p>` : ''}
+              
+              <a href="${youtubeUrl}" target="_blank" class="open-youtube-btn-large" id="openYouTubeBtn">
+                Open YouTube →
+              </a>
+            </div>
+            <div class="video-modal-footer">
+              <button class="video-done-btn" id="videoDoneBtn">Done Watching</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUserSelect() {
+      return `
+        <div class="user-select">
+          <h1>Strength Levels</h1>
+          <p>Who's working out?</p>
+          <div class="user-buttons">
+            <button class="user-btn" data-user="dad">
+              <span class="emoji">👨</span>
+              <span class="name">Dad</span>
+            </button>
+            <button class="user-btn" data-user="mom">
+              <span class="emoji">👩</span>
+              <span class="name">Mom</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderAssessment() {
+      const user = getUser();
+      const exerciseIndex = state.assessmentIndex;
+      const levelIndex = state.assessmentLevel;
+      
+      // Check if assessment is complete
+      if (exerciseIndex >= EXERCISES.length) {
+        return renderAssessmentComplete();
+      }
+      
+      const exercise = EXERCISES[exerciseIndex];
+      const level = exercise.levels[levelIndex];
+      const videoData = exercise.videos[levelIndex];
+      const tip = exercise.tips[levelIndex];
+      const assessmentCue = exercise.assessmentCue;
+      
+      const progressPercent = ((exerciseIndex) / EXERCISES.length) * 100;
+      
+      // Intro screen for new users
+      if (!state.assessmentIntroSeen) {
+        return `
+          <div class="assessment">
+            <div class="assessment-intro">
+              <div class="intro-icon">🎯</div>
+              <h2>Let's Find Your Starting Point</h2>
+              <p>Hi ${user.name}! Before we begin, let's figure out the right level for each exercise.</p>
+              <p>This isn't a test — it's about finding what feels <strong>challenging but doable</strong> for you.</p>
+              
+              <div class="intro-tips">
+                <div class="intro-tip">
+                  <span class="tip-icon">🪑</span>
+                  <span>Have a sturdy chair nearby</span>
+                </div>
+                <div class="intro-tip">
+                  <span class="tip-icon">🧱</span>
+                  <span>Stand near a wall for balance exercises</span>
+                </div>
+                <div class="intro-tip">
+                  <span class="tip-icon">⏱️</span>
+                  <span>Takes about 5-10 minutes</span>
+                </div>
+              </div>
+              
+              <button class="assessment-start-btn" id="startAssessmentBtn">
+                Let's Go! →
+              </button>
+            </div>
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="assessment">
+          <div class="assessment-header">
+            <div class="assessment-progress-bar">
+              <div class="assessment-progress-fill" style="width: ${progressPercent}%"></div>
+            </div>
+            <div class="assessment-progress-text">
+              Exercise ${exerciseIndex + 1} of ${EXERCISES.length}
+            </div>
+          </div>
+          
+          <div class="assessment-exercise">
+            <div class="assessment-exercise-header">
+              <span class="assessment-icon">${exercise.icon}</span>
+              <div>
+                <h2>${exercise.name}</h2>
+                <span class="assessment-level-label">Testing Level ${levelIndex + 1}</span>
+              </div>
+            </div>
+            
+            <div class="assessment-current-level">
+              <h3>${level}</h3>
+              <p class="assessment-tip">💡 ${tip}</p>
+            </div>
+            
+            <button class="assessment-video-btn" data-video-index="${levelIndex}" data-exercise-index="${exerciseIndex}">
+              <span>📺</span> Watch How To Do This
+            </button>
+            
+            <div class="assessment-instruction">
+              <div class="instruction-icon">🤔</div>
+              <p><strong>Try 5 reps</strong> of this exercise.</p>
+              <p class="assessment-cue">${assessmentCue}</p>
+            </div>
+            
+            <div class="assessment-question">
+              <p>How did that feel?</p>
+            </div>
+            
+            <div class="assessment-buttons">
+              <button class="assessment-btn too-hard" id="tooHardBtn">
+                <span class="btn-emoji">😤</span>
+                <span class="btn-text">Too Hard</span>
+                <span class="btn-subtext">I struggled or couldn't do it</span>
+              </button>
+              
+              <button class="assessment-btn just-right" id="justRightBtn">
+                <span class="btn-emoji">💪</span>
+                <span class="btn-text">Just Right</span>
+                <span class="btn-subtext">Challenging but doable</span>
+              </button>
+              
+              <button class="assessment-btn too-easy" id="tooEasyBtn" ${levelIndex >= 3 ? 'disabled' : ''}>
+                <span class="btn-emoji">😎</span>
+                <span class="btn-text">${levelIndex >= 3 ? 'Max Level!' : 'Too Easy'}</span>
+                <span class="btn-subtext">${levelIndex >= 3 ? 'This is the highest level' : 'Let me try harder'}</span>
+              </button>
+            </div>
+            
+            ${levelIndex > 0 ? `
+              <button class="assessment-back-btn" id="assessmentBackBtn">
+                ← Go back to easier version
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderAssessmentComplete() {
+      const user = getUser();
+      const results = state.assessmentResults;
+      
+      return `
+        <div class="assessment">
+          <div class="assessment-complete">
+            <div class="complete-icon">🎉</div>
+            <h2>You're All Set, ${user.name}!</h2>
+            <p>Here's your personalized starting point:</p>
+            
+            <div class="assessment-results">
+              ${EXERCISES.map(ex => {
+                const level = results[ex.id] || 1;
+                return `
+                  <div class="result-item">
+                    <span class="result-icon">${ex.icon}</span>
+                    <div class="result-info">
+                      <span class="result-name">${ex.name}</span>
+                      <span class="result-level">Level ${level}: ${ex.levels[level - 1]}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            
+            <div class="assessment-note">
+              <p>💡 <strong>Remember:</strong> These are starting points. As you get stronger, you'll level up!</p>
+              <p>It's okay to drop down a level on days when you're tired.</p>
+            </div>
+            
+            <button class="assessment-done-btn" id="assessmentDoneBtn">
+              Start Training! 💪
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDashboard() {
+      const user = getUser();
+      const totalLevels = Object.values(user.exercises).reduce((sum, ex) => sum + ex.level, 0);
+      
+      // Get partner info
+      const otherUserId = state.currentUser === 'dad' ? 'mom' : 'dad';
+      const otherUser = state.users[otherUserId];
+      const otherName = state.currentUser === 'dad' ? 'Mom' : 'Dad';
+      
+      let partnerBadge = '';
+      if (otherUser) {
+        const now = new Date();
+        const daysSince = otherUser.lastWorkout 
+          ? Math.floor((now - new Date(otherUser.lastWorkout)) / (1000 * 60 * 60 * 24))
+          : null;
+        
+        if (daysSince === 0) {
+          partnerBadge = `<div class="partner-badge active">${otherName} worked out today! 🎉</div>`;
+        } else if (daysSince !== null && daysSince <= 2) {
+          partnerBadge = `<div class="partner-badge recent">${otherName} is keeping up too 💪</div>`;
+        }
+      }
+      
+      return `
+        <div class="dashboard">
+          <div class="header">
+            <div class="header-left">
+              <h2>Hey ${user.name}!</h2>
+              ${user.streak > 0 ? `<div class="streak">🔥 ${user.streak} week streak</div>` : ''}
+            </div>
+            <div class="header-buttons">
+              <button class="compete-btn">💪 Team</button>
+              <button class="switch-user">Switch</button>
+            </div>
+          </div>
+          
+          ${partnerBadge}
+          
+          <div class="stats-bar">
+            <div class="stat-card">
+              <div class="value">${totalLevels}</div>
+              <div class="label">Total Level</div>
+            </div>
+            <div class="stat-card">
+              <div class="value">${user.totalWorkouts}</div>
+              <div class="label">Workouts</div>
+            </div>
+            <div class="stat-card">
+              <div class="value">${user.streak}</div>
+              <div class="label">Week Streak</div>
+            </div>
+          </div>
+          
+          <button class="start-workout-btn">
+            <span>💪</span>
+            Start Today's Workout
+          </button>
+          
+          <div class="exercises">
+            ${EXERCISES.map(ex => renderExerciseCard(ex, user.exercises[ex.id])).join('')}
+          </div>
+          
+          <button class="reassess-btn" id="reassessBtn">
+            🎯 Reassess My Levels
+          </button>
+        </div>
+      `;
+    }
+
+    function renderExerciseCard(exercise, userData) {
+      const isExpanded = state.expandedExercise === exercise.id;
+      const levelName = exercise.levels[userData.level - 1];
+      const videoData = exercise.videos[userData.level - 1];
+      const tip = exercise.tips[userData.level - 1];
+      const exerciseIndex = EXERCISES.findIndex(ex => ex.id === exercise.id);
+      
+      return `
+        <div class="exercise-card ${isExpanded ? 'expanded' : ''}" data-exercise="${exercise.id}">
+          <div class="exercise-header">
+            <div class="exercise-info">
+              <div class="exercise-icon">${exercise.icon}</div>
+              <div>
+                <div class="exercise-name">${exercise.name}</div>
+                <div class="exercise-level">Level ${userData.level}</div>
+              </div>
+            </div>
+            <div class="exercise-stars">
+              ${[0, 1, 2].map(i => `<span class="star ${i < userData.stars ? 'filled' : ''}">★</span>`).join('')}
+            </div>
+          </div>
+          <div class="exercise-details">
+            <div class="current-movement">
+              <div class="label">Current Movement</div>
+              <div class="movement">${levelName}</div>
+            </div>
+            
+            <button class="watch-video-btn video-btn" data-exercise-index="${exerciseIndex}" data-video-index="${userData.level - 1}" onclick="event.stopPropagation()">
+              <span>▶</span> Watch Proper Form
+            </button>
+            
+            <div class="tip-box">
+              <div class="tip-label">💡 Key Tip</div>
+              <div class="tip-text">${tip}</div>
+            </div>
+            
+            <div class="golf-benefit">
+              <span>⛳</span> ${exercise.golfBenefit}
+            </div>
+            
+            ${userData.level < 4 ? `
+              <div class="next-level-preview">
+                <span class="next-label">Next level:</span> ${exercise.levels[userData.level]}
+              </div>
+            ` : `
+              <div class="max-level-badge">
+                🏆 Max level reached!
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWorkoutSession() {
+      const user = getUser();
+      const currentEx = EXERCISES[state.workoutIndex];
+      const exData = user.exercises[currentEx.id];
+      const levelName = currentEx.levels[exData.level - 1];
+      const videoData = currentEx.videos[exData.level - 1];
+      const tip = currentEx.tips[exData.level - 1];
+      const allSetsComplete = state.workoutSets.every(s => s);
+      const isLastExercise = state.workoutIndex === EXERCISES.length - 1;
+      
+      return `
+        <div class="dashboard">
+          <div class="workout-session active">
+            <div class="workout-header">
+              <h2>Today's Workout</h2>
+              <div class="workout-progress">
+                ${EXERCISES.map((_, i) => `
+                  <div class="workout-dot ${i < state.workoutIndex ? 'done' : ''} ${i === state.workoutIndex ? 'current' : ''}"></div>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="current-exercise-card">
+              <div class="icon">${currentEx.icon}</div>
+              <h3>${currentEx.name}</h3>
+              <div class="movement-name">${levelName}</div>
+              
+              <button class="watch-video-btn-small video-btn" data-exercise-index="${state.workoutIndex}" data-video-index="${exData.level - 1}" onclick="event.stopPropagation()">
+                ▶ Watch Form
+              </button>
+              
+              <div class="workout-tip">💡 ${tip}</div>
+              
+              <div class="sets-tracker">
+                ${state.workoutSets.map((done, i) => `
+                  <div class="set-circle ${done ? 'completed' : ''}" data-set="${i}">
+                    ${done ? '✓' : i + 1}
+                  </div>
+                `).join('')}
+              </div>
+              <div class="reps-info">Tap each circle after completing 8-10 reps</div>
+            </div>
+            
+            ${isLastExercise && allSetsComplete ? `
+              <button class="finish-workout-btn">🎉 Finish Workout!</button>
+            ` : `
+              <button class="next-exercise-btn ${allSetsComplete ? 'ready' : ''}">
+                ${allSetsComplete ? 'Next Exercise →' : 'Complete all sets'}
+              </button>
+            `}
+            
+            <button class="end-session-btn">End Session Early</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderModal() {
+      const data = state.modalData;
+      return `
+        <div class="modal-overlay show">
+          <div class="modal">
+            <div class="celebration-icon">${data.icon}</div>
+            <h3>${data.title}</h3>
+            <p>${data.message}</p>
+            ${data.newLevel ? `
+              <div class="new-level">
+                <strong>New Movement:</strong><br>
+                ${data.newLevel}
+              </div>
+            ` : ''}
+            <button class="close-btn">Let's Go!</button>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderCompetition() {
+      const dad = state.users.dad;
+      const mom = state.users.mom;
+      
+      // Check if both users exist
+      if (!dad || !mom) {
+        return `
+          <div class="competition">
+            <div class="competition-header">
+              <h2>💪 Stronger Together</h2>
+              <button class="back-btn">← Back</button>
+            </div>
+            <div class="no-data-message">
+              <p>Both Mom and Dad need to start using the app to unlock team features!</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Calculate team stats
+      const dadTotalLevel = Object.values(dad.exercises).reduce((sum, ex) => sum + ex.level, 0);
+      const momTotalLevel = Object.values(mom.exercises).reduce((sum, ex) => sum + ex.level, 0);
+      const teamPower = dadTotalLevel + momTotalLevel;
+      const maxTeamPower = 48; // 6 exercises × 4 levels × 2 people
+      const teamPercent = Math.round((teamPower / maxTeamPower) * 100);
+      
+      // Calculate duo streak (only counts if BOTH worked out within the week)
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const dadActiveThisWeek = dad.lastWorkout && new Date(dad.lastWorkout) >= weekAgo;
+      const momActiveThisWeek = mom.lastWorkout && new Date(mom.lastWorkout) >= weekAgo;
+      const bothActiveThisWeek = dadActiveThisWeek && momActiveThisWeek;
+      
+      // Calculate combined workouts
+      const totalWorkoutsTogether = dad.totalWorkouts + mom.totalWorkouts;
+      
+      // Calculate team milestones
+      const milestones = [
+        { name: 'First Steps', desc: 'Both complete first workout', target: 2, current: Math.min(dad.totalWorkouts, 1) + Math.min(mom.totalWorkouts, 1), icon: '🌱' },
+        { name: 'Week Warriors', desc: 'Both active same week', target: 1, current: bothActiveThisWeek ? 1 : 0, icon: '🤝' },
+        { name: 'Team 10', desc: '10 workouts together', target: 10, current: totalWorkoutsTogether, icon: '💪' },
+        { name: 'Level Up Duo', desc: 'Both reach Level 2 on any exercise', target: 1, current: (dadTotalLevel > 6 && momTotalLevel > 6) ? 1 : 0, icon: '⬆️' },
+        { name: 'Team 25', desc: '25 workouts together', target: 25, current: totalWorkoutsTogether, icon: '🔥' },
+        { name: 'Power Couple', desc: 'Combined Team Power of 24+', target: 24, current: teamPower, icon: '⚡' },
+        { name: 'Century Club', desc: '100 workouts together', target: 100, current: totalWorkoutsTogether, icon: '💯' },
+        { name: 'Maxed Out', desc: 'Both reach max level on all exercises', target: 48, current: teamPower, icon: '🏆' },
+      ];
+      
+      // Partner status
+      const otherUser = state.currentUser === 'dad' ? mom : dad;
+      const otherName = state.currentUser === 'dad' ? 'Mom' : 'Dad';
+      const otherEmoji = state.currentUser === 'dad' ? '👩' : '👨';
+      const daysSinceOtherWorkout = otherUser.lastWorkout 
+        ? Math.floor((now - new Date(otherUser.lastWorkout)) / (1000 * 60 * 60 * 24))
+        : null;
+      
+      // Get partner status message
+      let partnerStatus = '';
+      let partnerStatusClass = '';
+      if (daysSinceOtherWorkout === null) {
+        partnerStatus = `${otherName} hasn't started yet — help them get going!`;
+        partnerStatusClass = 'waiting';
+      } else if (daysSinceOtherWorkout === 0) {
+        partnerStatus = `${otherName} worked out today! 🎉`;
+        partnerStatusClass = 'great';
+      } else if (daysSinceOtherWorkout <= 3) {
+        partnerStatus = `${otherName} worked out ${daysSinceOtherWorkout} day${daysSinceOtherWorkout > 1 ? 's' : ''} ago`;
+        partnerStatusClass = 'good';
+      } else if (daysSinceOtherWorkout <= 7) {
+        partnerStatus = `${otherName}'s last workout was ${daysSinceOtherWorkout} days ago`;
+        partnerStatusClass = 'nudge';
+      } else {
+        partnerStatus = `${otherName} might need some encouragement 💙`;
+        partnerStatusClass = 'nudge';
+      }
+      
+      return `
+        <div class="competition">
+          <div class="competition-header">
+            <h2>💪 Stronger Together</h2>
+            <button class="back-btn">← Back</button>
+          </div>
+          
+          <!-- Team Power Card -->
+          <div class="team-card main-card">
+            <div class="team-card-header">
+              <span class="team-icon">🏠</span>
+              <span>Team Power</span>
+            </div>
+            <div class="team-power-display">
+              <div class="team-power-number">${teamPower}</div>
+              <div class="team-power-max">/ ${maxTeamPower}</div>
+            </div>
+            <div class="team-power-bar">
+              <div class="team-power-fill" style="width: ${teamPercent}%"></div>
+            </div>
+            <div class="team-power-breakdown">
+              <div class="breakdown-item">
+                <span class="breakdown-emoji">👨</span>
+                <span class="breakdown-name">Dad</span>
+                <span class="breakdown-value">${dadTotalLevel}</span>
+              </div>
+              <div class="breakdown-plus">+</div>
+              <div class="breakdown-item">
+                <span class="breakdown-emoji">👩</span>
+                <span class="breakdown-name">Mom</span>
+                <span class="breakdown-value">${momTotalLevel}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Weekly Check-in -->
+          <div class="team-card ${bothActiveThisWeek ? 'success-card' : ''}">
+            <div class="team-card-header">
+              <span class="team-icon">📅</span>
+              <span>This Week's Check-in</span>
+            </div>
+            <div class="weekly-checkin">
+              <div class="checkin-person ${dadActiveThisWeek ? 'done' : ''}">
+                <div class="checkin-avatar">👨</div>
+                <div class="checkin-status">${dadActiveThisWeek ? '✓' : '○'}</div>
+                <div class="checkin-label">Dad</div>
+              </div>
+              <div class="checkin-connector ${bothActiveThisWeek ? 'connected' : ''}">
+                ${bothActiveThisWeek ? '💪' : '· · ·'}
+              </div>
+              <div class="checkin-person ${momActiveThisWeek ? 'done' : ''}">
+                <div class="checkin-avatar">👩</div>
+                <div class="checkin-status">${momActiveThisWeek ? '✓' : '○'}</div>
+                <div class="checkin-label">Mom</div>
+              </div>
+            </div>
+            <div class="checkin-message">
+              ${bothActiveThisWeek 
+                ? "You BOTH showed up this week! That's what it's about. 🙌" 
+                : dadActiveThisWeek && !momActiveThisWeek 
+                  ? "Dad's done — Mom, your turn! You've got this. 💪"
+                  : !dadActiveThisWeek && momActiveThisWeek
+                    ? "Mom's done — Dad, your turn! You've got this. 💪"
+                    : "A new week, a new chance. Who's going first? 🌟"}
+            </div>
+          </div>
+          
+          <!-- Partner Status & Cheer -->
+          <div class="team-card partner-card">
+            <div class="team-card-header">
+              <span class="team-icon">${otherEmoji}</span>
+              <span>Your Partner</span>
+            </div>
+            <div class="partner-status ${partnerStatusClass}">
+              ${partnerStatus}
+            </div>
+            <button class="cheer-btn" id="cheerBtn">
+              <span class="cheer-emoji">📣</span>
+              Send ${otherName} a Cheer!
+            </button>
+            <div class="cheer-sent" id="cheerSent">
+              💛 Cheer sent! (They'll see it next time they open the app)
+            </div>
+          </div>
+          
+          <!-- Combined Stats -->
+          <div class="team-card">
+            <div class="team-card-header">
+              <span class="team-icon">📊</span>
+              <span>Together Stats</span>
+            </div>
+            <div class="together-stats">
+              <div class="together-stat">
+                <div class="together-stat-value">${totalWorkoutsTogether}</div>
+                <div class="together-stat-label">Combined Workouts</div>
+              </div>
+              <div class="together-stat">
+                <div class="together-stat-value">${Math.min(dad.streak, mom.streak)}</div>
+                <div class="together-stat-label">Duo Streak (weeks both active)</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Team Milestones -->
+          <div class="team-card">
+            <div class="team-card-header">
+              <span class="team-icon">🎯</span>
+              <span>Team Milestones</span>
+            </div>
+            <div class="milestones-list">
+              ${milestones.map(m => {
+                const achieved = m.current >= m.target;
+                const progress = Math.min(100, Math.round((m.current / m.target) * 100));
+                return `
+                  <div class="milestone ${achieved ? 'achieved' : ''}">
+                    <div class="milestone-icon">${achieved ? m.icon : '🔒'}</div>
+                    <div class="milestone-info">
+                      <div class="milestone-name">${m.name}</div>
+                      <div class="milestone-desc">${m.desc}</div>
+                      ${!achieved ? `
+                        <div class="milestone-progress-bar">
+                          <div class="milestone-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                      ` : ''}
+                    </div>
+                    ${achieved ? '<div class="milestone-check">✓</div>' : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+          
+          <!-- Why This Matters -->
+          <div class="team-card heart-card">
+            <div class="why-matters">
+              <div class="heart-icon">❤️</div>
+              <p>Every workout you do together is another day you'll have together. More golf rounds. More pickleball games. More years with the grandkids.</p>
+              <p class="tagline">You're not competing. You're investing in more time together.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== EVENT HANDLERS ====================
+    function attachEventListeners() {
+      // User selection
+      document.querySelectorAll('.user-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const userId = btn.dataset.user;
+          selectUser(userId);
+        });
+      });
+      
+      // Assessment: Start button (intro screen)
+      const startAssessmentBtn = document.getElementById('startAssessmentBtn');
+      if (startAssessmentBtn) {
+        startAssessmentBtn.addEventListener('click', () => {
+          state.assessmentIntroSeen = true;
+          render();
+        });
+      }
+      
+      // Assessment/Dashboard: Video button
+      document.querySelectorAll('.assessment-video-btn, .video-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const exerciseIndex = parseInt(btn.dataset.exerciseIndex);
+          const videoIndex = parseInt(btn.dataset.videoIndex);
+          
+          if (!isNaN(exerciseIndex) && !isNaN(videoIndex)) {
+            const exercise = EXERCISES[exerciseIndex];
+            state.videoData = exercise.videos[videoIndex];
+            state.showVideoModal = true;
+            render();
+          }
+        });
+      });
+      
+      // Video modal close button
+      const closeVideoModal = document.getElementById('closeVideoModal');
+      if (closeVideoModal) {
+        closeVideoModal.addEventListener('click', () => {
+          state.showVideoModal = false;
+          state.videoData = null;
+          render();
+        });
+      }
+      
+      // Video modal done button
+      const videoDoneBtn = document.getElementById('videoDoneBtn');
+      if (videoDoneBtn) {
+        videoDoneBtn.addEventListener('click', () => {
+          state.showVideoModal = false;
+          state.videoData = null;
+          render();
+        });
+      }
+      
+      // Video modal overlay click to close
+      const videoModalOverlay = document.getElementById('videoModalOverlay');
+      if (videoModalOverlay) {
+        videoModalOverlay.addEventListener('click', (e) => {
+          if (e.target === videoModalOverlay) {
+            state.showVideoModal = false;
+            state.videoData = null;
+            render();
+          }
+        });
+      }
+      
+      // Assessment: Too Hard button
+      const tooHardBtn = document.getElementById('tooHardBtn');
+      if (tooHardBtn) {
+        tooHardBtn.addEventListener('click', () => {
+          const exercise = EXERCISES[state.assessmentIndex];
+          // If on level 1 and it's too hard, still set to level 1 (easiest available)
+          // Otherwise, the previous level was right
+          const assignedLevel = state.assessmentLevel === 0 ? 1 : state.assessmentLevel;
+          state.assessmentResults[exercise.id] = assignedLevel;
+          
+          playSetComplete();
+          
+          // Move to next exercise
+          state.assessmentIndex++;
+          state.assessmentLevel = 0;
+          render();
+        });
+      }
+      
+      // Assessment: Just Right button
+      const justRightBtn = document.getElementById('justRightBtn');
+      if (justRightBtn) {
+        justRightBtn.addEventListener('click', () => {
+          const exercise = EXERCISES[state.assessmentIndex];
+          // Current level is the right one (1-indexed)
+          state.assessmentResults[exercise.id] = state.assessmentLevel + 1;
+          
+          playStarEarned();
+          
+          // Move to next exercise
+          state.assessmentIndex++;
+          state.assessmentLevel = 0;
+          render();
+        });
+      }
+      
+      // Assessment: Too Easy button
+      const tooEasyBtn = document.getElementById('tooEasyBtn');
+      if (tooEasyBtn && !tooEasyBtn.disabled) {
+        tooEasyBtn.addEventListener('click', () => {
+          // Try next level up
+          if (state.assessmentLevel < 3) {
+            state.assessmentLevel++;
+            playTone(600, 0.1, 'sine', 0.2);
+            render();
+          }
+        });
+      }
+      
+      // Assessment: Back button
+      const assessmentBackBtn = document.getElementById('assessmentBackBtn');
+      if (assessmentBackBtn) {
+        assessmentBackBtn.addEventListener('click', () => {
+          if (state.assessmentLevel > 0) {
+            state.assessmentLevel--;
+            render();
+          }
+        });
+      }
+      
+      // Assessment: Done button
+      const assessmentDoneBtn = document.getElementById('assessmentDoneBtn');
+      if (assessmentDoneBtn) {
+        assessmentDoneBtn.addEventListener('click', () => {
+          // Save assessment results to user data
+          const user = getUser();
+          Object.entries(state.assessmentResults).forEach(([exId, level]) => {
+            user.exercises[exId].level = level;
+            user.exercises[exId].stars = 0;
+          });
+          user.needsAssessment = false;
+          updateUser({ exercises: user.exercises, needsAssessment: false });
+          
+          // Exit assessment
+          state.inAssessment = false;
+          state.assessmentResults = {};
+          state.assessmentIntroSeen = false;
+          
+          playLevelUp();
+          celebrateCenter();
+          
+          render();
+        });
+      }
+      
+      // Reassess button (on dashboard)
+      const reassessBtn = document.getElementById('reassessBtn');
+      if (reassessBtn) {
+        reassessBtn.addEventListener('click', () => {
+          state.inAssessment = true;
+          state.assessmentIndex = 0;
+          state.assessmentLevel = 0;
+          state.assessmentResults = {};
+          state.assessmentIntroSeen = false;
+          render();
+        });
+      }
+      
+      // Switch user
+      const switchBtn = document.querySelector('.switch-user');
+      if (switchBtn) {
+        switchBtn.addEventListener('click', () => {
+          state.currentUser = null;
+          state.expandedExercise = null;
+          state.showCompetition = false;
+          render();
+        });
+      }
+      
+      // Competition button
+      const competeBtn = document.querySelector('.compete-btn');
+      if (competeBtn) {
+        competeBtn.addEventListener('click', () => {
+          state.showCompetition = true;
+          render();
+        });
+      }
+      
+      // Back button from competition
+      const backBtn = document.querySelector('.back-btn');
+      if (backBtn) {
+        backBtn.addEventListener('click', () => {
+          state.showCompetition = false;
+          render();
+        });
+      }
+      
+      // Cheer button
+      const cheerBtn = document.getElementById('cheerBtn');
+      if (cheerBtn) {
+        cheerBtn.addEventListener('click', () => {
+          // Play a happy sound
+          playStarEarned();
+          
+          // Show the cheer sent message
+          cheerBtn.style.display = 'none';
+          const cheerSent = document.getElementById('cheerSent');
+          if (cheerSent) {
+            cheerSent.classList.add('show');
+          }
+          
+          // Create confetti
+          celebrateCenter();
+          
+          // In a real app, this would send a notification to the partner
+          // For now, we'll store it in localStorage
+          const cheers = JSON.parse(localStorage.getItem('strengthCheers') || '{}');
+          const otherUser = state.currentUser === 'dad' ? 'mom' : 'dad';
+          cheers[otherUser] = {
+            from: state.currentUser,
+            time: new Date().toISOString()
+          };
+          localStorage.setItem('strengthCheers', JSON.stringify(cheers));
+        });
+      }
+      
+      // Exercise cards
+      document.querySelectorAll('.exercise-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.log-workout-btn')) {
+            const exId = card.dataset.exercise;
+            state.expandedExercise = state.expandedExercise === exId ? null : exId;
+            render();
+          }
+        });
+      });
+      
+      // Start workout
+      const startBtn = document.querySelector('.start-workout-btn');
+      if (startBtn) {
+        startBtn.addEventListener('click', startWorkout);
+      }
+      
+      // Set circles
+      document.querySelectorAll('.set-circle').forEach(circle => {
+        circle.addEventListener('click', () => {
+          const setIndex = parseInt(circle.dataset.set);
+          if (!state.workoutSets[setIndex]) {
+            completeSet(setIndex);
+          }
+        });
+      });
+      
+      // Next exercise
+      const nextBtn = document.querySelector('.next-exercise-btn');
+      if (nextBtn && nextBtn.classList.contains('ready')) {
+        nextBtn.addEventListener('click', nextExercise);
+      }
+      
+      // Finish workout
+      const finishBtn = document.querySelector('.finish-workout-btn');
+      if (finishBtn) {
+        finishBtn.addEventListener('click', finishWorkout);
+      }
+      
+      // End session
+      const endBtn = document.querySelector('.end-session-btn');
+      if (endBtn) {
+        endBtn.addEventListener('click', () => {
+          state.inWorkout = false;
+          state.workoutIndex = 0;
+          state.workoutSets = [false, false, false];
+          render();
+        });
+      }
+      
+      // Modal close
+      const closeBtn = document.querySelector('.close-btn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          state.showModal = false;
+          state.modalData = null;
+          render();
+        });
+      }
+    }
+
+    function selectUser(userId) {
+      initAudio();
+      state.currentUser = userId;
+      
+      const isNewUser = !state.users[userId];
+      
+      if (isNewUser) {
+        state.users[userId] = {
+          ...JSON.parse(JSON.stringify(DEFAULT_USER_DATA)),
+          name: userId === 'dad' ? 'Dad' : 'Mom',
+          needsAssessment: true
+        };
+        saveData();
+        
+        // Start assessment for new user
+        state.inAssessment = true;
+        state.assessmentIndex = 0;
+        state.assessmentLevel = 0;
+        state.assessmentResults = {};
+        render();
+        return;
+      }
+      
+      // Check if existing user still needs assessment
+      if (state.users[userId].needsAssessment) {
+        state.inAssessment = true;
+        state.assessmentIndex = 0;
+        state.assessmentLevel = 0;
+        state.assessmentResults = {};
+        render();
+        return;
+      }
+      
+      // Check for cheers
+      const cheers = JSON.parse(localStorage.getItem('strengthCheers') || '{}');
+      if (cheers[userId]) {
+        const fromName = cheers[userId].from === 'dad' ? 'Dad' : 'Mom';
+        state.modalData = {
+          icon: '📣',
+          title: 'You Got a Cheer!',
+          message: `${fromName} sent you encouragement! They're rooting for you. 💪`
+        };
+        state.showModal = true;
+        
+        // Clear the cheer
+        delete cheers[userId];
+        localStorage.setItem('strengthCheers', JSON.stringify(cheers));
+        
+        playStarEarned();
+      }
+      
+      render();
+    }
+
+    function startWorkout() {
+      state.inWorkout = true;
+      state.workoutIndex = 0;
+      state.workoutSets = [false, false, false];
+      render();
+    }
+
+    function completeSet(setIndex) {
+      state.workoutSets[setIndex] = true;
+      playSetComplete();
+      render();
+    }
+
+    function nextExercise() {
+      // Award star for completing exercise
+      const user = getUser();
+      const currentEx = EXERCISES[state.workoutIndex];
+      const exData = user.exercises[currentEx.id];
+      
+      // Check for level up
+      if (exData.stars >= 2 && exData.level < 4) {
+        // Level up!
+        exData.level += 1;
+        exData.stars = 0;
+        playLevelUp();
+        celebrateCenter();
+        
+        state.modalData = {
+          icon: '🎯',
+          title: 'Level Up!',
+          message: `Amazing work! You've advanced your ${currentEx.name} to Level ${exData.level}!`,
+          newLevel: currentEx.levels[exData.level - 1]
+        };
+        state.showModal = true;
+      } else if (exData.level < 4) {
+        exData.stars += 1;
+        playStarEarned();
+      }
+      
+      updateUser({ exercises: user.exercises });
+      
+      // Move to next exercise
+      state.workoutIndex += 1;
+      state.workoutSets = [false, false, false];
+      render();
+    }
+
+    function finishWorkout() {
+      // Award star for last exercise
+      const user = getUser();
+      const currentEx = EXERCISES[state.workoutIndex];
+      const exData = user.exercises[currentEx.id];
+      
+      let leveledUp = false;
+      
+      if (exData.stars >= 2 && exData.level < 4) {
+        exData.level += 1;
+        exData.stars = 0;
+        leveledUp = true;
+      } else if (exData.level < 4) {
+        exData.stars += 1;
+      }
+      
+      // Update streak
+      const today = new Date().toDateString();
+      const lastWorkout = user.lastWorkout ? new Date(user.lastWorkout).toDateString() : null;
+      
+      let newStreak = user.streak;
+      if (lastWorkout !== today) {
+        // Check if within a week
+        const daysSince = user.lastWorkout 
+          ? Math.floor((new Date() - new Date(user.lastWorkout)) / (1000 * 60 * 60 * 24))
+          : 0;
+        
+        if (daysSince <= 7) {
+          newStreak = user.streak + 1;
+        } else if (!user.lastWorkout) {
+          newStreak = 1;
+        } else {
+          newStreak = 1;
+        }
+      }
+      
+      updateUser({
+        exercises: user.exercises,
+        totalWorkouts: user.totalWorkouts + 1,
+        lastWorkout: new Date().toISOString(),
+        streak: newStreak
+      });
+      
+      playWorkoutComplete();
+      celebrateCenter();
+      
+      const totalLevels = Object.values(user.exercises).reduce((sum, ex) => sum + ex.level, 0);
+      
+      state.modalData = {
+        icon: '🏆',
+        title: 'Workout Complete!',
+        message: leveledUp 
+          ? `You crushed it and leveled up your ${currentEx.name}! Total Level: ${totalLevels}`
+          : `Great work! That's workout #${user.totalWorkouts + 1}. Total Level: ${totalLevels}`
+      };
+      state.showModal = true;
+      
+      state.inWorkout = false;
+      state.workoutIndex = 0;
+      state.workoutSets = [false, false, false];
+      
+      render();
+    }
+
+    // ==================== INIT ====================
+    // Initial render with localStorage data
+    loadData().then(() => {
+      render();
+    });
+  </script>
+</body>
+</html>
