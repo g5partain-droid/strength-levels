@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#1e3a5f">
   <title>Strength Levels</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <!-- Supabase Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
     
     * {
       margin: 0;
@@ -23,27 +23,32 @@
     }
     
     :root {
-      --bg-deep: #0f0f1a;
-      --bg-card: #1a1a2e;
-      --bg-card-hover: #252542;
-      --accent-gold: #f4c430;
-      --accent-gold-dim: #c9a227;
-      --accent-green: #4ade80;
-      --accent-blue: #60a5fa;
-      --text-primary: #f8f8f8;
-      --text-secondary: #a0a0b0;
-      --text-muted: #606070;
-      --border: #2a2a40;
-      --success: #22c55e;
-      --celebration: #f59e0b;
+      /* Warm, friendly colors - not dark/techy */
+      --bg-deep: #f5f0e8;
+      --bg-card: #ffffff;
+      --bg-card-hover: #faf8f5;
+      --accent-gold: #e6a817;
+      --accent-gold-dim: #d49b15;
+      --accent-green: #22a861;
+      --accent-blue: #3b82f6;
+      --accent-orange: #ea580c;
+      --accent-red: #dc2626;
+      --text-primary: #1f2937;
+      --text-secondary: #4b5563;
+      --text-muted: #6b7280;
+      --border: #e5e0d8;
+      --success: #22a861;
+      --celebration: #e6a817;
     }
     
     html, body {
-      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-deep);
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
+      font-size: 20px;
+      line-height: 1.5;
     }
     
     body {
@@ -67,22 +72,20 @@
       min-height: 100vh;
       padding: 2rem;
       text-align: center;
+      background: linear-gradient(180deg, #fff9f0 0%, #f5f0e8 100%);
     }
     
     .user-select h1 {
       font-family: 'DM Serif Display', serif;
-      font-size: 2.5rem;
+      font-size: 2.75rem;
       margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--accent-gold);
     }
     
     .user-select p {
       color: var(--text-secondary);
       margin-bottom: 3rem;
-      font-size: 1.1rem;
+      font-size: 1.25rem;
     }
     
     .user-buttons {
@@ -94,7 +97,7 @@
     
     .user-btn {
       background: var(--bg-card);
-      border: 2px solid var(--border);
+      border: 3px solid var(--border);
       border-radius: 20px;
       padding: 2rem 2.5rem;
       cursor: pointer;
@@ -122,8 +125,8 @@
     
     /* Main Dashboard */
     .dashboard {
-      padding: 1rem;
-      padding-top: calc(1rem + env(safe-area-inset-top));
+      padding: 1.25rem;
+      padding-top: calc(1.25rem + env(safe-area-inset-top));
     }
     
     .header {
@@ -131,12 +134,13 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
-      padding: 0 0.5rem;
+      padding: 0 0.25rem;
     }
     
     .header-left h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.75rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 800;
       color: var(--text-primary);
     }
     
@@ -144,76 +148,81 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 0.25rem;
-      color: var(--accent-gold);
-      font-weight: 600;
+      margin-top: 0.5rem;
+      color: var(--accent-orange);
+      font-weight: 700;
+      font-size: 1.15rem;
     }
     
     .switch-user {
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
+      border: 2px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.875rem 1.25rem;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: 1.05rem;
+      font-weight: 600;
       transition: all 0.2s;
     }
     
     .switch-user:hover {
       background: var(--bg-card-hover);
-      color: var(--text-primary);
+      transform: scale(1.02);
     }
     
     .compete-btn {
       background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
       border: none;
-      color: var(--bg-deep);
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
+      color: white;
+      padding: 0.875rem 1.25rem;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: 1.05rem;
       font-weight: 700;
       transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(230, 168, 23, 0.3);
     }
     
     .compete-btn:hover {
       transform: scale(1.05);
-      box-shadow: 0 4px 15px rgba(244, 196, 48, 0.3);
+      box-shadow: 0 6px 18px rgba(230, 168, 23, 0.4);
     }
     
     .header-buttons {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.75rem;
       align-items: center;
     }
     
     /* Competition Screen */
     .competition {
-      padding: 1rem;
-      padding-top: calc(1rem + env(safe-area-inset-top));
+      padding: 1.25rem;
+      padding-top: calc(1.25rem + env(safe-area-inset-top));
     }
     
     .competition-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
     
     .competition-header h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.75rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
     }
     
     .back-btn {
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
+      border: 2px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.875rem 1.25rem;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: 1.05rem;
+      font-weight: 600;
     }
     
     .vs-card {
@@ -222,15 +231,16 @@
       padding: 1.5rem;
       margin-bottom: 1rem;
       text-align: center;
+      border: 2px solid var(--border);
     }
     
     .vs-card.winner-card {
-      background: linear-gradient(135deg, rgba(244, 196, 48, 0.2), rgba(244, 196, 48, 0.05));
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
       border: 2px solid var(--accent-gold);
     }
     
     .vs-card h3 {
-      font-size: 0.875rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -797,7 +807,7 @@
       font-style: italic;
     }
     
-    /* Stats Bar */
+    /* Stats Bar - BIGGER AND CLEARER */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -807,23 +817,23 @@
     
     .partner-badge {
       text-align: center;
-      padding: 0.625rem 1rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-      font-weight: 500;
+      padding: 1rem 1.25rem;
+      border-radius: 16px;
+      margin-bottom: 1.25rem;
+      font-size: 1.15rem;
+      font-weight: 700;
     }
     
     .partner-badge.active {
-      background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
+      background: #ecfdf5;
       color: var(--accent-green);
-      border: 1px solid rgba(74, 222, 128, 0.3);
+      border: 2px solid #a7f3d0;
     }
     
     .partner-badge.recent {
-      background: rgba(96, 165, 250, 0.15);
+      background: #eff6ff;
       color: var(--accent-blue);
-      border: 1px solid rgba(96, 165, 250, 0.2);
+      border: 2px solid #bfdbfe;
     }
     
     .stat-card {
@@ -831,44 +841,50 @@
       border-radius: 16px;
       padding: 1rem;
       text-align: center;
+      border: 2px solid var(--border);
     }
     
     .stat-card .value {
-      font-size: 1.75rem;
-      font-weight: 700;
+      font-size: 2rem;
+      font-weight: 800;
       color: var(--accent-gold);
     }
     
     .stat-card .label {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-top: 0.25rem;
+      font-weight: 600;
     }
     
     /* Exercise Cards */
     .exercises {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.5rem;
     }
     
     .exercise-card {
       background: var(--bg-card);
       border-radius: 20px;
-      padding: 1.25rem;
+      padding: 1.5rem;
       transition: all 0.3s ease;
       cursor: pointer;
-      border: 2px solid transparent;
+      border: 2px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     
     .exercise-card:hover {
       background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
     
     .exercise-card.expanded {
       border-color: var(--accent-gold);
+      box-shadow: 0 4px 20px rgba(230, 168, 23, 0.2);
     }
     
     .exercise-header {
@@ -877,32 +893,39 @@
       align-items: center;
     }
     
-    .exercise-info {
+    .exercise-header .exercise-info {
       display: flex;
       align-items: center;
       gap: 1rem;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      border-radius: 0;
     }
     
     .exercise-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
-      border-radius: 14px;
+      width: 65px;
+      height: 65px;
+      background: linear-gradient(135deg, #fff9e6, #fff3cc);
+      border: 2px solid var(--accent-gold);
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 2rem;
     }
     
     .exercise-name {
-      font-weight: 600;
-      font-size: 1.1rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--text-primary);
       margin-bottom: 0.25rem;
     }
     
     .exercise-level {
-      font-size: 0.875rem;
+      font-size: 1.1rem;
       color: var(--text-secondary);
+      font-weight: 500;
     }
     
     .exercise-stars {
@@ -911,22 +934,21 @@
     }
     
     .star {
-      font-size: 1.25rem;
-      color: var(--text-muted);
+      font-size: 1.75rem;
+      color: #ddd;
       transition: all 0.3s ease;
     }
     
     .star.filled {
       color: var(--accent-gold);
-      text-shadow: 0 0 10px var(--accent-gold);
     }
     
     /* Expanded Exercise View */
     .exercise-details {
       display: none;
-      margin-top: 1.25rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid var(--border);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid var(--border);
     }
     
     .exercise-card.expanded .exercise-details {
@@ -934,91 +956,97 @@
     }
     
     .current-movement {
-      background: var(--bg-deep);
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #22a861, #1e9456);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: white;
     }
     
     .current-movement .label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.5rem;
+      font-weight: 700;
     }
     
     .current-movement .movement {
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: white;
     }
     
     .watch-video-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       width: 100%;
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
       text-decoration: none;
-      padding: 0.875rem;
-      border-radius: 12px;
+      padding: 1.25rem;
+      border-radius: 16px;
       border: none;
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 1.25rem 0;
       cursor: pointer;
       transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
     
     .watch-video-btn:hover {
       transform: scale(1.02);
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
     }
     
     .watch-video-btn span {
-      font-size: 0.875rem;
+      font-size: 1.1rem;
     }
     
     .tip-box {
-      background: rgba(244, 196, 48, 0.1);
-      border: 1px solid rgba(244, 196, 48, 0.3);
-      border-radius: 12px;
-      padding: 0.875rem;
-      margin-bottom: 1rem;
+      background: #ecfdf5;
+      border: 2px solid #a7f3d0;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
     }
     
     .tip-label {
-      font-size: 0.75rem;
-      color: var(--accent-gold);
-      font-weight: 600;
-      margin-bottom: 0.375rem;
+      font-size: 1.05rem;
+      color: var(--accent-green);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
     }
     
     .tip-text {
-      font-size: 0.95rem;
+      font-size: 1.15rem;
       color: var(--text-primary);
-      line-height: 1.4;
+      line-height: 1.5;
     }
     
     .golf-benefit {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(74, 222, 128, 0.1);
-      border-radius: 10px;
-      padding: 0.75rem;
+      background: #ecfdf5;
+      border-radius: 12px;
+      padding: 1rem;
       margin-bottom: 1rem;
-      font-size: 0.875rem;
+      font-size: 1rem;
       color: var(--accent-green);
+      border: 1px solid #a7f3d0;
     }
     
     .next-level-preview {
       color: var(--text-secondary);
-      font-size: 0.875rem;
-      padding-top: 0.5rem;
-      border-top: 1px solid var(--border);
+      font-size: 1rem;
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+      border-top: 2px solid var(--border);
     }
     
     .next-level-preview .next-label {
@@ -1171,11 +1199,12 @@
       cursor: pointer;
     }
     
-    /* Level Control Buttons */
+    /* Level Control Buttons - BIG AND OBVIOUS */
     .level-controls {
       display: flex;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
     }
     
     .level-btn {
@@ -1183,104 +1212,116 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.25rem;
-      background: var(--bg-deep);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 0.5rem;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      gap: 0.5rem;
+      padding: 1.25rem 1.5rem;
+      border-radius: 16px;
+      font-size: 1.2rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     
-    .level-btn:hover {
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-    }
-    
-    .level-btn.up:hover {
-      border-color: var(--accent-green);
-      color: var(--accent-green);
+    .level-btn.down {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      color: white;
     }
     
     .level-btn.down:hover {
-      border-color: var(--accent-gold);
-      color: var(--accent-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+    
+    .level-btn.up {
+      background: linear-gradient(135deg, #22a861, #1e9456);
+      border: none;
+      color: white;
+    }
+    
+    .level-btn.up:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(34, 168, 97, 0.4);
     }
     
     .level-btn:disabled {
-      opacity: 0.3;
+      opacity: 0.35;
       cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+      background: #ccc;
     }
     
-    /* Exercise Info (muscle groups & benefits) */
-    .exercise-info {
-      background: var(--bg-deep);
-      border-radius: 10px;
-      padding: 0.75rem;
-      margin-top: 0.75rem;
+    /* Exercise Info (muscle groups & benefits) - BIGGER TEXT */
+    .exercise-info-box {
+      background: #f8f6f2;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-top: 1.25rem;
+      border: 1px solid var(--border);
     }
     
     .exercise-info-label {
-      font-size: 0.7rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
     }
     
     .exercise-muscles {
-      font-size: 0.85rem;
+      font-size: 1.2rem;
       color: var(--accent-blue);
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
     }
     
     .exercise-benefits {
-      font-size: 0.8rem;
+      font-size: 1.1rem;
       color: var(--text-secondary);
-      line-height: 1.4;
+      line-height: 1.6;
     }
     
     .exercise-instructions {
-      background: var(--bg-card-hover);
-      border-radius: 10px;
-      padding: 0.75rem;
-      margin-top: 0.75rem;
-      border-left: 3px solid var(--accent-gold);
+      background: #fffbeb;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-top: 1.25rem;
+      border-left: 5px solid var(--accent-gold);
+      border: 2px solid #fef3c7;
     }
     
     .exercise-instructions-title {
-      font-size: 0.75rem;
-      color: var(--accent-gold);
-      font-weight: 600;
-      margin-bottom: 0.35rem;
+      font-size: 1.05rem;
+      color: var(--accent-orange);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
     }
     
     .exercise-instructions-text {
-      font-size: 0.85rem;
+      font-size: 1.15rem;
       color: var(--text-primary);
-      line-height: 1.5;
+      line-height: 1.6;
     }
     
     /* Resume Workout Banner */
     .resume-banner {
-      background: linear-gradient(135deg, var(--accent-blue), #3b82f6);
-      border-radius: 14px;
-      padding: 1rem;
-      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
       text-align: center;
     }
     
     .resume-banner h4 {
       color: white;
-      font-size: 0.95rem;
+      font-size: 1.15rem;
       margin-bottom: 0.5rem;
     }
     
     .resume-banner p {
-      color: rgba(255,255,255,0.8);
+      color: rgba(255,255,255,0.9);
       font-size: 0.8rem;
       margin-bottom: 0.75rem;
     }
@@ -1321,28 +1362,33 @@
       z-index: 200;
     }
     
-    /* Today's Workout Button */
+    /* Today's Workout Button - BIG AND FRIENDLY */
     .start-workout-btn {
       width: 100%;
-      background: linear-gradient(135deg, var(--success), #16a34a);
+      background: linear-gradient(135deg, #22a861, #1e9456);
       color: white;
       border: none;
-      padding: 1.25rem;
-      border-radius: 16px;
-      font-size: 1.2rem;
-      font-weight: 700;
+      padding: 1.75rem;
+      border-radius: 20px;
+      font-size: 1.5rem;
+      font-weight: 800;
       cursor: pointer;
       margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 1rem;
       transition: all 0.2s;
+      box-shadow: 0 6px 20px rgba(34, 168, 97, 0.35);
+    }
+    
+    .start-workout-btn span {
+      font-size: 1.75rem;
     }
     
     .start-workout-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(34, 168, 97, 0.45);
     }
     
     /* Workout Session */
@@ -1357,27 +1403,29 @@
     .workout-header {
       text-align: center;
       margin-bottom: 2rem;
-      padding: 1.5rem;
+      padding: 1.75rem;
       background: var(--bg-card);
       border-radius: 20px;
+      border: 2px solid var(--border);
     }
     
     .workout-header h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.5rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
       margin-bottom: 0.5rem;
     }
     
     .workout-progress {
       display: flex;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       margin-top: 1rem;
     }
     
     .workout-dot {
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: var(--border);
       transition: all 0.3s;
@@ -3038,10 +3086,10 @@
               <span>▶</span> Watch Proper Form
             </button>
             
-            <div class="exercise-info">
-              <div class="exercise-info-label">Muscles Worked</div>
+            <div class="exercise-info-box">
+              <div class="exercise-info-label">💪 Muscles Worked</div>
               <div class="exercise-muscles">${exercise.muscleGroups}</div>
-              <div class="exercise-info-label">Real-Life Benefits</div>
+              <div class="exercise-info-label">✨ Real-Life Benefits</div>
               <div class="exercise-benefits">${exercise.benefits}</div>
             </div>
             
