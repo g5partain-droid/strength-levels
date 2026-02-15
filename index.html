@@ -1535,49 +1535,171 @@
       text-align: left;
     }
     
+    /* ========== ENHANCED EXERCISE COMPLETION (Senior-Friendly) ========== */
     .sets-tracker {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 1rem;
       margin: 1.5rem 0;
     }
     
+    /* Base: Large 60px+ touch targets, high contrast */
     .set-circle {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
+      min-height: 64px;
       border-radius: 50%;
       background: var(--bg-deep);
-      border: 3px solid var(--border);
+      border: 4px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.5rem;
+      font-weight: 800;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.35s ease;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      font-family: inherit;
+      /* Accessibility: high contrast, reduced motion support */
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      .set-circle { transition: none; }
     }
     
     .set-circle:hover {
       border-color: var(--text-secondary);
+      transform: scale(1.05);
     }
     
-    .set-circle.completed {
+    .set-circle:focus {
+      outline: 3px solid var(--accent-gold);
+      outline-offset: 3px;
+    }
+    
+    /* Set 1-2: Gentle color changes, subtle animations */
+    .set-circle.completed.set-1 {
+      background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
+      border-color: var(--accent-green);
+      color: #065f46;
+      animation: setCompleteGentle 0.5s ease;
+    }
+    
+    .set-circle.completed.set-2 {
+      background: linear-gradient(135deg, #93c5fd, #60a5fa);
+      border-color: var(--accent-blue);
+      color: #1e3a8a;
+      animation: setCompleteGentle 0.5s ease 0.05s both;
+    }
+    
+    /* Set 3-4: More vibrant colors, bolder effects */
+    .set-circle.completed.set-3 {
+      background: linear-gradient(135deg, #fcd34d, var(--accent-gold));
+      border-color: var(--accent-gold-dim);
+      color: #422006;
+      box-shadow: 0 4px 20px rgba(230, 168, 23, 0.4);
+      animation: setCompleteVibrant 0.55s ease;
+    }
+    
+    .set-circle.completed.set-4 {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border-color: #d97706;
+      color: #422006;
+      box-shadow: 0 4px 24px rgba(245, 158, 11, 0.5);
+      animation: setCompleteVibrant 0.55s ease 0.05s both;
+    }
+    
+    /* Final set: Celebration - triumphant styling */
+    .set-circle.completed.set-5 {
+      background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+      border-color: #b45309;
+      color: #422006;
+      box-shadow: 0 6px 28px rgba(230, 168, 23, 0.6);
+      animation: setCompleteCelebration 0.7s ease;
+    }
+    
+    @keyframes setCompleteGentle {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes setCompleteVibrant {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.2); }
+      70% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes setCompleteCelebration {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.25); }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Fallback for 3-set workouts (set-1, set-2, set-3 only) */
+    .set-circle.completed:not([class*="set-"]) {
       background: var(--accent-gold);
       border-color: var(--accent-gold);
       color: var(--bg-deep);
-      animation: setComplete 0.4s ease;
-    }
-    
-    @keyframes setComplete {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
+      animation: setCompleteGentle 0.5s ease;
     }
     
     .reps-info {
       color: var(--text-secondary);
-      font-size: 1rem;
+      font-size: 1.1rem;
       margin-top: 0.5rem;
+    }
+    
+    /* Motivational feedback message - large, accessible */
+    .set-feedback-message {
+      min-height: 60px;
+      margin: 1rem 0;
+      padding: 1rem 1.25rem;
+      border-radius: 14px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text-secondary);
+      background: transparent;
+    }
+    
+    .set-feedback-message.has-feedback {
+      color: var(--text-primary);
+      background: linear-gradient(135deg, rgba(230, 168, 23, 0.15), rgba(34, 168, 97, 0.1));
+      border: 2px solid rgba(230, 168, 23, 0.3);
+      animation: feedbackFadeIn 0.4s ease;
+    }
+    
+    @keyframes feedbackFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Reset sets button - large, touch-friendly */
+    .reset-sets-btn {
+      width: 100%;
+      min-height: 60px;
+      margin-top: 1rem;
+      padding: 1rem 1.5rem;
+      background: var(--bg-deep);
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .reset-sets-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+      color: var(--text-primary);
     }
     
     .watch-video-btn-small {
@@ -1609,6 +1731,48 @@
       background: rgba(244, 196, 48, 0.1);
       border-radius: 8px;
       display: inline-block;
+    }
+    
+    /* ========== MOTIVATIONAL SNIPPETS (Senior-Friendly) ========== */
+    .motivational-snippet {
+      margin: 1rem 0 1.25rem;
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(135deg, rgba(34, 168, 97, 0.08), rgba(59, 130, 246, 0.06));
+      border-left: 4px solid var(--accent-green);
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--text-primary);
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.5s ease, transform 0.4s ease;
+    }
+    
+    .motivational-snippet.fade-in {
+      animation: msgFadeIn 0.6s ease both;
+    }
+    
+    @keyframes msgFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      .motivational-snippet { transition: none; }
+    }
+    
+    @media (max-width: 480px) {
+      .motivational-snippet {
+        font-size: 1.15rem;
+        padding: 1rem 1.25rem;
+      }
+    }
+    
+    .motivational-snippet-dashboard {
+      margin: 1rem 0;
+      font-size: 1.1rem;
     }
     
     .next-exercise-btn {
@@ -2083,6 +2247,76 @@
       color: var(--accent-blue);
     }
     
+    /* Week progress and rotation - senior-friendly */
+    .week-progress-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(34, 168, 97, 0.06));
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    .week-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .week-progress-label {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .week-progress-routine {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+    
+    .week-progress-bar-wrap {
+      height: 12px;
+      background: var(--bg-deep);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    
+    .week-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+      border-radius: 6px;
+      transition: width 0.4s ease;
+    }
+    
+    .week-progress-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    
+    .next-week-btn {
+      width: 100%;
+      min-height: 60px;
+      padding: 1rem 1.5rem;
+      background: var(--bg-card);
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .next-week-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+    
     /* Video Modal */
     .video-modal-overlay {
       position: fixed;
@@ -2422,12 +2656,34 @@
       }
     ];
 
+    // Number of sets per exercise (3-5). 5 enables full progressive feedback.
+    const WORKOUT_SETS = 5;
+    const createEmptyWorkoutSets = () => Array(WORKOUT_SETS).fill(false);
+
+    // Weekly exercise rotation: different orderings for variety
+    const ROUTINES = [
+      { name: 'Classic', ids: ['squat', 'push', 'pull', 'hinge', 'core', 'balance'] },
+      { name: 'Balance First', ids: ['balance', 'core', 'hinge', 'pull', 'push', 'squat'] },
+      { name: 'Lower Body Focus', ids: ['hinge', 'squat', 'core', 'push', 'pull', 'balance'] }
+    ];
+    const WORKOUTS_PER_WEEK = 7;
+
+    function getActiveExercises() {
+      const user = getUser();
+      const idx = (user && typeof user.currentRotationIndex === 'number') ? user.currentRotationIndex % ROUTINES.length : 0;
+      const ids = ROUTINES[idx].ids;
+      return ids.map(function(id) { return EXERCISES.find(function(e) { return e.id === id; }); }).filter(Boolean);
+    }
+
     const DEFAULT_USER_DATA = {
       name: '',
       streak: 0,
       lastWorkout: null,
       totalWorkouts: 0,
-      exercises: {}
+      exercises: {},
+      workoutsThisWeek: 0,
+      currentRotationIndex: 0,
+      weekStartDate: null
     };
 
     // Initialize default exercise data
@@ -2449,7 +2705,7 @@
       inWorkout: false,
       workoutStartTime: null,
       workoutIndex: 0,
-      workoutSets: [false, false, false],
+      workoutSets: createEmptyWorkoutSets(),
       showModal: false,
       modalData: null,
       showCompetition: false,
@@ -2461,10 +2717,17 @@
       assessmentIntroSeen: false, // track if intro was shown
       // Video modal
       showVideoModal: false,
-      videoData: null
+      videoData: null,
+      // Progressive set feedback (motivational message)
+      setFeedbackText: null,
+      // Rotating motivational snippets (humorous, health-benefit messages)
+      motivationalSnippet: null,
+      lastMotivationalIndex: -1,
+      motivationalPhase: 'start'
     };
 
     let workoutTimerInterval = null;
+    let motivationalRotationInterval = null;
 
     // ==================== SUPABASE CONFIG ====================
     // TODO: Replace these with your Supabase project credentials
@@ -2556,7 +2819,13 @@
     }
 
     function getUser() {
-      return state.users[state.currentUser];
+      const user = state.users[state.currentUser];
+      if (user && (user.workoutsThisWeek === undefined || user.currentRotationIndex === undefined)) {
+        user.workoutsThisWeek = user.workoutsThisWeek ?? 0;
+        user.currentRotationIndex = user.currentRotationIndex ?? 0;
+        if (!user.weekStartDate) user.weekStartDate = new Date().toISOString();
+      }
+      return user;
     }
 
     function updateUser(updates) {
@@ -2684,6 +2953,28 @@
       playTone(880, 0.15, 'sine', 0.4);
       setTimeout(() => playTone(1100, 0.15, 'sine', 0.4), 100);
     }
+    
+    /* Progressive audio: Set 1-2 simple clicks, Set 3-4 richer, Set 5 triumphant */
+    function playSetCompleteProgressive(setIndex) {
+      initAudio();
+      const setNum = setIndex + 1;
+      if (setNum <= 2) {
+        // Gentle: simple two-tone click
+        playTone(660, 0.12, 'sine', 0.35);
+        setTimeout(() => playTone(880, 0.12, 'sine', 0.35), 80);
+      } else if (setNum <= 4) {
+        // Vibrant: ascending triad
+        playTone(523, 0.1, 'sine', 0.35);
+        setTimeout(() => playTone(659, 0.1, 'sine', 0.35), 90);
+        setTimeout(() => playTone(784, 0.15, 'sine', 0.35), 180);
+      } else {
+        // Triumphant: fanfare for final set
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((freq, i) => {
+          setTimeout(() => playTone(freq, 0.2, 'triangle', 0.4), i * 100);
+        });
+      }
+    }
 
     function playStarEarned() {
       initAudio();
@@ -2771,6 +3062,25 @@
       const centerY = window.innerHeight / 3;
       createConfetti(centerX, centerY, 80);
     }
+    
+    /* Lighter particle burst for sets 3-4 (less intense than full confetti) */
+    function createSetParticles(x, y, count) {
+      const colors = ['#f4c430', '#4ade80', '#60a5fa'];
+      for (let i = 0; i < (count || 25); i++) {
+        confettiPieces.push({
+          x: x || window.innerWidth / 2,
+          y: y || window.innerHeight / 2,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.8) * 8,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 5 + 3,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 8,
+          life: 1
+        });
+      }
+      if (confettiPieces.length > 0) animateConfetti();
+    }
 
     // ==================== RENDER ====================
     function render() {
@@ -2807,6 +3117,23 @@
           const el = document.getElementById('workout-timer-display');
           if (el) el.textContent = formatElapsed(Date.now() - state.workoutStartTime);
         }, 1000);
+      }
+      // Motivational snippet rotation (middle phase only, every 15 sec)
+      if (motivationalRotationInterval) {
+        clearInterval(motivationalRotationInterval);
+        motivationalRotationInterval = null;
+      }
+      if (state.inWorkout) {
+        const completedCount = state.workoutSets.filter(Boolean).length;
+        const allSetsComplete = state.workoutSets.every(function(s) { return s; });
+        if (!allSetsComplete && completedCount > 0) {
+          motivationalRotationInterval = setInterval(function() {
+            const result = getMotivationalMessage('middle', state.lastMotivationalIndex);
+            state.motivationalSnippet = result.text;
+            state.lastMotivationalIndex = result.index;
+            render();
+          }, 15000);
+        }
       }
     }
     
@@ -3032,12 +3359,12 @@
       const savedPosition = checkResumeWorkout();
       let resumeBanner = '';
       if (savedPosition) {
-        const exerciseName = EXERCISES[savedPosition.index].name;
+        const exerciseName = getActiveExercises()[savedPosition.index].name;
         const setsComplete = savedPosition.sets.filter(s => s).length;
         resumeBanner = `
           <div class="resume-banner">
             <h4>📱 Resume Your Workout?</h4>
-            <p>You left off at ${exerciseName} (${setsComplete}/3 sets done)</p>
+            <p>You left off at ${exerciseName} (${setsComplete}/${WORKOUT_SETS} sets done)</p>
             <div class="resume-banner-buttons">
               <button class="resume-btn restart">Start Over</button>
               <button class="resume-btn continue">Continue →</button>
@@ -3096,13 +3423,27 @@
             </div>
           </div>
           
+          <div class="week-progress-card" role="region" aria-label="Weekly progress and rotation">
+            <div class="week-progress-header">
+              <span class="week-progress-label">This Week</span>
+              <span class="week-progress-routine">${ROUTINES[(user.currentRotationIndex ?? 0) % ROUTINES.length].name}</span>
+            </div>
+            <div class="week-progress-bar-wrap">
+              <div class="week-progress-bar" style="width: ${((user.workoutsThisWeek || 0) / WORKOUTS_PER_WEEK) * 100}%"></div>
+            </div>
+            <div class="week-progress-text">${user.workoutsThisWeek || 0} of ${WORKOUTS_PER_WEEK} workouts</div>
+            <button type="button" class="next-week-btn" id="nextWeekBtn" aria-label="Advance to next week and new routine">
+              Next Week →
+            </button>
+          </div>
+          
           <button class="start-workout-btn">
             <span>💪</span>
             Start Today's Workout
           </button>
           
           <div class="exercises">
-            ${EXERCISES.map(ex => renderExerciseCard(ex, user.exercises[ex.id])).join('')}
+            ${getActiveExercises().map((ex, idx) => renderExerciseCard(ex, user.exercises[ex.id], idx)).join('')}
           </div>
           
           <button class="reassess-btn" id="reassessBtn">
@@ -3112,13 +3453,13 @@
       `;
     }
 
-    function renderExerciseCard(exercise, userData) {
+    function renderExerciseCard(exercise, userData, exerciseIndex) {
       const isExpanded = state.expandedExercise === exercise.id;
       const levelName = exercise.levels[userData.level - 1];
       const videoData = exercise.videos[userData.level - 1];
       const tip = exercise.tips[userData.level - 1];
       const instruction = exercise.instructions[userData.level - 1];
-      const exerciseIndex = EXERCISES.findIndex(ex => ex.id === exercise.id);
+      if (exerciseIndex === undefined) exerciseIndex = EXERCISES.findIndex(function(ex) { return ex.id === exercise.id; });
       const completions = userData.completions || 0;
       
       return `
@@ -3162,6 +3503,12 @@
               <div class="tip-text">${tip}</div>
             </div>
             
+            ${isExpanded ? `
+            <div class="motivational-snippet motivational-snippet-dashboard fade-in" role="status" aria-live="polite">
+              ${getMotivationalMessage('start').text}
+            </div>
+            ` : ''}
+            
             <div class="level-controls">
               <button class="level-btn down" onclick="event.stopPropagation(); levelDown('${exercise.id}')" ${userData.level <= 1 ? 'disabled' : ''}>
                 ⬇️ Easier
@@ -3194,15 +3541,27 @@
 
     function renderWorkoutSession() {
       const user = getUser();
-      const currentEx = EXERCISES[state.workoutIndex];
+      const activeExercises = getActiveExercises();
+      const currentEx = activeExercises[state.workoutIndex];
       const exData = user.exercises[currentEx.id];
       const levelName = currentEx.levels[exData.level - 1];
       const videoData = currentEx.videos[exData.level - 1];
       const tip = currentEx.tips[exData.level - 1];
       const instruction = currentEx.instructions[exData.level - 1];
       const allSetsComplete = state.workoutSets.every(s => s);
-      const isLastExercise = state.workoutIndex === EXERCISES.length - 1;
+      const isLastExercise = state.workoutIndex === activeExercises.length - 1;
       const elapsedMs = state.workoutStartTime ? Date.now() - state.workoutStartTime : 0;
+      const completedCount = state.workoutSets.filter(Boolean).length;
+      
+      // Determine phase and update motivational snippet
+      const phase = allSetsComplete ? 'completion' : (completedCount === 0 ? 'start' : 'middle');
+      if (phase !== state.motivationalPhase) {
+        state.motivationalPhase = phase;
+        const { text, index } = getMotivationalMessage(phase, state.lastMotivationalIndex);
+        state.motivationalSnippet = text;
+        state.lastMotivationalIndex = index;
+      }
+      const displaySnippet = state.motivationalSnippet || getMotivationalMessage('start').text;
       
       return `
         <div class="dashboard">
@@ -3210,7 +3569,7 @@
             <div class="workout-header">
               <h2>Today's Workout</h2>
               <div class="workout-progress">
-                ${EXERCISES.map((_, i) => `
+                ${activeExercises.map((_, i) => `
                   <div class="workout-dot ${i < state.workoutIndex ? 'done' : ''} ${i === state.workoutIndex ? 'current' : ''}"></div>
                 `).join('')}
               </div>
@@ -3221,6 +3580,10 @@
               <div class="workout-timer" id="workout-timer" role="timer" aria-label="Workout elapsed time">
                 <span id="workout-timer-display">${formatElapsed(elapsedMs)}</span>
               </div>
+            </div>
+            
+            <div class="motivational-snippet fade-in" id="motivationalSnippet" role="status" aria-live="polite">
+              ${displaySnippet}
             </div>
             
             <div class="current-exercise-card">
@@ -3237,14 +3600,21 @@
               
               <div class="workout-tip">💡 ${tip}</div>
               
-              <div class="sets-tracker">
+              <div class="sets-tracker" role="group" aria-label="Exercise sets - tap each circle when you complete a set">
                 ${state.workoutSets.map((done, i) => `
-                  <div class="set-circle ${done ? 'completed' : ''}" data-set="${i}">
+                  <button type="button" class="set-circle ${done ? 'completed set-' + (i + 1) : ''}" data-set="${i}"
+                    aria-label="${done ? 'Set ' + (i + 1) + ' completed' : 'Mark set ' + (i + 1) + ' as complete'}"
+                    aria-pressed="${done}">
                     ${done ? '✓' : i + 1}
-                  </div>
+                  </button>
                 `).join('')}
               </div>
-              <div class="reps-info">Tap each circle after completing the set</div>
+              <div class="set-feedback-message ${state.setFeedbackText ? 'has-feedback' : ''}" id="setFeedback" aria-live="polite" aria-atomic="true" role="status">
+                ${state.setFeedbackText || 'Tap each circle after completing the set'}
+              </div>
+              <button type="button" class="reset-sets-btn" id="resetSetsBtn" aria-label="Reset all sets and start over">
+                🔄 Reset Sets
+              </button>
             </div>
             
             ${isLastExercise && allSetsComplete ? `
@@ -3537,10 +3907,12 @@
           const videoIndex = parseInt(btn.dataset.videoIndex);
           
           if (!isNaN(exerciseIndex) && !isNaN(videoIndex)) {
-            const exercise = EXERCISES[exerciseIndex];
-            state.videoData = exercise.videos[videoIndex];
-            state.showVideoModal = true;
-            render();
+            const exercise = btn.classList.contains('assessment-video-btn') ? EXERCISES[exerciseIndex] : getActiveExercises()[exerciseIndex];
+            if (exercise && exercise.videos[videoIndex]) {
+              state.videoData = exercise.videos[videoIndex];
+              state.showVideoModal = true;
+              render();
+            }
           }
         });
       });
@@ -3695,6 +4067,29 @@
         });
       }
       
+      // Next Week button (manual rotation)
+      const nextWeekBtn = document.getElementById('nextWeekBtn');
+      if (nextWeekBtn) {
+        nextWeekBtn.addEventListener('click', () => {
+          const user = getUser();
+          const nextIdx = ((user.currentRotationIndex ?? 0) + 1) % ROUTINES.length;
+          updateUser({
+            workoutsThisWeek: 0,
+            currentRotationIndex: nextIdx,
+            weekStartDate: new Date().toISOString()
+          });
+          playLevelUp();
+          celebrateCenter();
+          state.modalData = {
+            icon: '🔄',
+            title: 'New Routine!',
+            message: `Switched to "${ROUTINES[nextIdx].name}". Fresh start for the week!`
+          };
+          state.showModal = true;
+          render();
+        });
+      }
+      
       // Back button from competition
       const backBtn = document.querySelector('.back-btn');
       if (backBtn) {
@@ -3750,15 +4145,31 @@
         startBtn.addEventListener('click', startWorkout);
       }
       
-      // Set circles
+      // Set circles (buttons)
       document.querySelectorAll('.set-circle').forEach(circle => {
-        circle.addEventListener('click', () => {
+        circle.addEventListener('click', (e) => {
+          e.preventDefault();
           const setIndex = parseInt(circle.dataset.set);
           if (!state.workoutSets[setIndex]) {
             completeSet(setIndex);
           }
         });
       });
+      
+      // Reset sets button
+      const resetSetsBtn = document.getElementById('resetSetsBtn');
+      if (resetSetsBtn) {
+        resetSetsBtn.addEventListener('click', () => {
+          state.workoutSets = createEmptyWorkoutSets();
+          state.setFeedbackText = 'Sets reset. Ready when you are!';
+          saveWorkoutPosition();
+          render();
+          setTimeout(() => {
+            state.setFeedbackText = null;
+            render();
+          }, 2500);
+        });
+      }
       
       // Next exercise
       const nextBtn = document.querySelector('.next-exercise-btn');
@@ -3778,7 +4189,7 @@
         endBtn.addEventListener('click', () => {
           state.inWorkout = false;
           state.workoutIndex = 0;
-          state.workoutSets = [false, false, false];
+          state.workoutSets = createEmptyWorkoutSets();
           render();
         });
       }
@@ -3820,7 +4231,9 @@
             state.inWorkout = true;
             state.workoutStartTime = Date.now();
             state.workoutIndex = pos.index;
-            state.workoutSets = pos.sets;
+            // Normalize sets array (handles migration from 3 to 5 sets)
+            const saved = pos.sets || [];
+            state.workoutSets = createEmptyWorkoutSets().map((_, i) => !!saved[i]);
             render();
           }
         });
@@ -3833,7 +4246,7 @@
           state.inWorkout = true;
           state.workoutStartTime = Date.now();
           state.workoutIndex = 0;
-          state.workoutSets = [false, false, false];
+          state.workoutSets = createEmptyWorkoutSets();
           render();
         });
       }
@@ -3897,20 +4310,133 @@
       state.inWorkout = true;
       state.workoutStartTime = Date.now();
       state.workoutIndex = 0;
-      state.workoutSets = [false, false, false];
+      state.workoutSets = createEmptyWorkoutSets();
+      state.motivationalPhase = 'start';
+      state.motivationalSnippet = null;
+      state.lastMotivationalIndex = -1;
       render();
     }
 
+    /* Motivational messages for seniors - progressive encouragement */
+    const SET_MESSAGES = {
+      1: ['Nice start!', 'First one done!', 'You\'ve got this!'],
+      2: ['Two down!', 'Building momentum!', 'Keep going strong!'],
+      3: ['Halfway there!', 'You\'re on fire!', 'Strong work!'],
+      4: ['Almost there!', 'One more to go!', 'So close!'],
+      5: ['All sets complete!', 'You did it! Amazing!', 'Workout champion!']
+    };
+
+    /* Humorous, age-appropriate motivational snippets by exercise phase */
+    const MOTIVATIONAL_SNIPPETS = {
+      start: [
+        "Your joints are getting more flexible than your dinner plans!",
+        "You're building stronger bones than your WiFi connection!",
+        "Every rep is an investment in your future self.",
+        "Strong today means independent tomorrow.",
+        "Your grandkids will need to keep up with YOU.",
+        "This is the best appointment you'll have all week.",
+        "You're not getting older—you're getting stronger!",
+        "Balance and strength: the real fountain of youth."
+      ],
+      middle: [
+        "Your muscles have more memory than your phone.",
+        "Strong legs = fewer falls. You've got this!",
+        "Your heart is thanking you right now.",
+        "Building strength one rep at a time.",
+        "This is what staying independent looks like.",
+        "Your future self is already grateful.",
+        "Stronger core, happier back—it's science!",
+        "You're doing the work that matters most.",
+        "Every set brings you closer to your goals.",
+        "Your body rewards consistency. Keep going!"
+      ],
+      completion: [
+        "You just made your future self very happy!",
+        "That's the kind of strength that lasts a lifetime.",
+        "Another workout in the books. Well done!",
+        "Your joints and muscles are celebrating.",
+        "You showed up. That's the hard part—and you did it.",
+        "Strong work! Rest and recover—you've earned it.",
+        "One more exercise closer to your best self.",
+        "Consistency beats intensity. You're winning!"
+      ]
+    };
+
+    function getMotivationalMessage(phase, excludeIndex) {
+      const messages = MOTIVATIONAL_SNIPPETS[phase] || MOTIVATIONAL_SNIPPETS.middle;
+      let idx = Math.floor(Math.random() * messages.length);
+      if (excludeIndex !== undefined && messages.length > 1) {
+        while (idx === excludeIndex) {
+          idx = Math.floor(Math.random() * messages.length);
+        }
+      }
+      return { text: messages[idx], index: idx };
+    }
+
+    function triggerHaptic() {
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }
+
     function completeSet(setIndex) {
+      if (state.workoutSets[setIndex]) return;
       state.workoutSets[setIndex] = true;
-      playSetComplete();
+      
+      // Haptic feedback (if supported)
+      triggerHaptic();
+      
+      // Progressive audio
+      playSetCompleteProgressive(setIndex);
+      
+      // Progressive visual effects
+      const setNum = setIndex + 1;
+      const trackerEl = document.querySelector('.sets-tracker');
+      const rect = trackerEl ? trackerEl.getBoundingClientRect() : null;
+      const centerX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+      const centerY = rect ? rect.top + rect.height / 2 : window.innerHeight / 3;
+      
+      // Respect reduced-motion preference (accessibility)
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReducedMotion) {
+        if (setNum <= 2) {
+          // Gentle: no particles
+        } else if (setNum <= 4) {
+          createSetParticles(centerX, centerY, 20);
+        } else {
+          createConfetti(centerX, centerY, 60);
+        }
+      }
+      
+      // Motivational message (set completion)
+      const msgs = SET_MESSAGES[setNum] || SET_MESSAGES[1];
+      state.setFeedbackText = msgs[Math.floor(Math.random() * msgs.length)];
+      
+      // Rotate humorous snippet on set completion (if not final set)
+      if (setNum < WORKOUT_SETS) {
+        const result = getMotivationalMessage('middle', state.lastMotivationalIndex);
+        state.motivationalSnippet = result.text;
+        state.lastMotivationalIndex = result.index;
+      }
+      
+      // Persist progress
+      saveWorkoutPosition();
+      
       render();
+      
+      // Clear feedback after 3 seconds so next tap shows fresh message
+      setTimeout(() => {
+        if (state.setFeedbackText) {
+          state.setFeedbackText = null;
+          render();
+        }
+      }, 3000);
     }
 
     function nextExercise() {
       // Award star for completing exercise (stars are just for tracking consistency now)
       const user = getUser();
-      const currentEx = EXERCISES[state.workoutIndex];
+      const currentEx = getActiveExercises()[state.workoutIndex];
       const exData = user.exercises[currentEx.id];
       
       // Just track completion, no auto level-up
@@ -3935,7 +4461,7 @@
       
       // Move to next exercise
       state.workoutIndex += 1;
-      state.workoutSets = [false, false, false];
+      state.workoutSets = createEmptyWorkoutSets();
       
       // Save workout position for resume
       saveWorkoutPosition();
@@ -3946,7 +4472,7 @@
     function finishWorkout() {
       // Track completion for last exercise
       const user = getUser();
-      const currentEx = EXERCISES[state.workoutIndex];
+      const currentEx = getActiveExercises()[state.workoutIndex];
       const exData = user.exercises[currentEx.id];
       
       exData.completions = (exData.completions || 0) + 1;
@@ -3972,12 +4498,24 @@
       }
       
       const newTotalWorkouts = user.totalWorkouts + 1;
+      const newWorkoutsThisWeek = (user.workoutsThisWeek || 0) + 1;
+      
+      // Check for week completion and rotation
+      let didRotate = false;
+      let nextRotationIndex = user.currentRotationIndex ?? 0;
+      if (newWorkoutsThisWeek >= WORKOUTS_PER_WEEK) {
+        nextRotationIndex = ((user.currentRotationIndex ?? 0) + 1) % ROUTINES.length;
+        didRotate = true;
+      }
       
       updateUser({
         exercises: user.exercises,
         totalWorkouts: newTotalWorkouts,
         lastWorkout: new Date().toISOString(),
-        streak: newStreak
+        streak: newStreak,
+        workoutsThisWeek: didRotate ? 0 : newWorkoutsThisWeek,
+        currentRotationIndex: nextRotationIndex,
+        weekStartDate: didRotate ? new Date().toISOString() : (user.weekStartDate || new Date().toISOString())
       });
       
       // Clear saved workout position
@@ -3988,18 +4526,34 @@
       
       const totalLevels = Object.values(user.exercises).reduce((sum, ex) => sum + ex.level, 0);
       
-      state.modalData = {
-        icon: '🏆',
-        title: 'Workout Complete!',
-        message: `Great work! That's workout #${newTotalWorkouts}. Total Level: ${totalLevels}`
-      };
+      if (didRotate) {
+        playLevelUp();
+        state.modalData = {
+          icon: '🔄',
+          title: 'New Week, New Routine!',
+          message: `You completed ${WORKOUTS_PER_WEEK} workouts! Switching to "${ROUTINES[nextRotationIndex].name}" for variety. Keep up the great work!`
+        };
+      } else {
+        state.modalData = {
+          icon: '🏆',
+          title: 'Workout Complete!',
+          message: `Great work! That's workout #${newTotalWorkouts}. ${newWorkoutsThisWeek}/${WORKOUTS_PER_WEEK} this week. Total Level: ${totalLevels}`
+        };
+      }
       state.showModal = true;
       
       state.inWorkout = false;
       state.workoutIndex = 0;
-      state.workoutSets = [false, false, false];
+      state.workoutSets = createEmptyWorkoutSets();
       
       render();
+    }
+
+    // ==================== PWA SERVICE WORKER ====================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
     }
 
     // ==================== INIT ====================
