@@ -1442,6 +1442,56 @@
       transform: scale(1.2);
     }
     
+    /* Workout Timer - extra large, senior-friendly, high contrast */
+    .workout-timer-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 1.5rem 0 2rem;
+      padding: 1.5rem 1rem;
+      width: 100%;
+    }
+    .workout-timer {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 260px;
+      padding: 1.25rem 2rem;
+      background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+      border: 5px solid var(--accent-gold);
+      border-radius: 24px;
+      box-shadow: 0 6px 24px rgba(230, 168, 23, 0.35), 0 0 0 2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+      font-size: clamp(4rem, 14vw, 6.5rem);
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+    .workout-timer-label {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.75rem;
+    }
+    @media (min-width: 500px) {
+      .workout-timer {
+        font-size: 6rem;
+        min-width: 300px;
+        padding: 1.5rem 2.5rem;
+      }
+    }
+    @media (max-width: 380px) {
+      .workout-timer {
+        font-size: 3.5rem;
+        min-width: 220px;
+        padding: 1rem 1.5rem;
+      }
+    }
+    
     .current-exercise-card {
       background: var(--bg-card);
       border-radius: 24px;
@@ -2397,6 +2447,7 @@
       },
       expandedExercise: null,
       inWorkout: false,
+      workoutStartTime: null,
       workoutIndex: 0,
       workoutSets: [false, false, false],
       showModal: false,
@@ -2412,6 +2463,8 @@
       showVideoModal: false,
       videoData: null
     };
+
+    let workoutTimerInterval = null;
 
     // ==================== SUPABASE CONFIG ====================
     // TODO: Replace these with your Supabase project credentials
@@ -2729,7 +2782,7 @@
         app.innerHTML = renderAssessment();
       } else if (state.showCompetition) {
         app.innerHTML = renderCompetition();
-      } else if (state.inWorkout) {
+      } else       if (state.inWorkout) {
         app.innerHTML = renderWorkoutSession();
       } else {
         app.innerHTML = renderDashboard();
@@ -2744,6 +2797,17 @@
       }
       
       attachEventListeners();
+
+      if (workoutTimerInterval) {
+        clearInterval(workoutTimerInterval);
+        workoutTimerInterval = null;
+      }
+      if (state.inWorkout && state.workoutStartTime) {
+        workoutTimerInterval = setInterval(function() {
+          const el = document.getElementById('workout-timer-display');
+          if (el) el.textContent = formatElapsed(Date.now() - state.workoutStartTime);
+        }, 1000);
+      }
     }
     
     function renderVideoModal() {
@@ -3121,6 +3185,13 @@
       `;
     }
 
+    function formatElapsed(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      return min + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+
     function renderWorkoutSession() {
       const user = getUser();
       const currentEx = EXERCISES[state.workoutIndex];
@@ -3131,6 +3202,7 @@
       const instruction = currentEx.instructions[exData.level - 1];
       const allSetsComplete = state.workoutSets.every(s => s);
       const isLastExercise = state.workoutIndex === EXERCISES.length - 1;
+      const elapsedMs = state.workoutStartTime ? Date.now() - state.workoutStartTime : 0;
       
       return `
         <div class="dashboard">
@@ -3141,6 +3213,13 @@
                 ${EXERCISES.map((_, i) => `
                   <div class="workout-dot ${i < state.workoutIndex ? 'done' : ''} ${i === state.workoutIndex ? 'current' : ''}"></div>
                 `).join('')}
+              </div>
+            </div>
+            
+            <div class="workout-timer-wrap" aria-live="polite" aria-atomic="true">
+              <span class="workout-timer-label">Time</span>
+              <div class="workout-timer" id="workout-timer" role="timer" aria-label="Workout elapsed time">
+                <span id="workout-timer-display">${formatElapsed(elapsedMs)}</span>
               </div>
             </div>
             
@@ -3739,6 +3818,7 @@
           const pos = checkResumeWorkout();
           if (pos) {
             state.inWorkout = true;
+            state.workoutStartTime = Date.now();
             state.workoutIndex = pos.index;
             state.workoutSets = pos.sets;
             render();
@@ -3751,6 +3831,7 @@
         restartBtn.addEventListener('click', () => {
           clearWorkoutPosition();
           state.inWorkout = true;
+          state.workoutStartTime = Date.now();
           state.workoutIndex = 0;
           state.workoutSets = [false, false, false];
           render();
@@ -3814,6 +3895,7 @@
 
     function startWorkout() {
       state.inWorkout = true;
+      state.workoutStartTime = Date.now();
       state.workoutIndex = 0;
       state.workoutSets = [false, false, false];
       render();
