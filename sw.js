@@ -1,5 +1,5 @@
 /* Service Worker for Strength Levels PWA - enables offline caching */
-const CACHE_NAME = 'strength-levels-v1';
+const CACHE_NAME = 'strength-levels-v2';
 const urlsToCache = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
