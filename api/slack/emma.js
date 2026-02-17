@@ -152,8 +152,8 @@ async function processApproval(event) {
       `Summary: ${ticket.summary}`,
       `Category: ${ticket.category}`,
       `Priority: ${ticket.priority}`,
-      `Original feedback: "${ticket.feedback?.message_text || "N/A"}"`,
-      `From: ${ticket.feedback?.slack_user_name || "Unknown user"}`,
+      `Original feedback: "${ticket.feedback?.message || "N/A"}"`,
+      `From: ${ticket.feedback?.slack_user_name || ticket.feedback?.slack_user || "Unknown user"}`,
     ].join("\n")
   );
 
@@ -164,8 +164,8 @@ async function processApproval(event) {
     `## Ticket Info`,
     `- **Category:** ${ticket.category}`,
     `- **Priority:** ${ticket.priority}`,
-    `- **Original Feedback:** "${ticket.feedback?.message_text || "N/A"}"`,
-    `- **From:** ${ticket.feedback?.slack_user_name || "Unknown"}`,
+    `- **Original Feedback:** "${ticket.feedback?.message || "N/A"}"`,
+    `- **From:** ${ticket.feedback?.slack_user_name || ticket.feedback?.slack_user || "Unknown"}`,
     ``,
     `---`,
     ``,

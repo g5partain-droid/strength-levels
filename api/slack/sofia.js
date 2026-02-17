@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
   try {
     const supabase = getSupabase();
 
-    // Get all new (untriaged) feedback
+    // Get all new (untriaged) feedback (using actual column names)
     const { data: newFeedback, error } = await supabase
       .from("feedback")
       .select("*")
@@ -57,10 +57,12 @@ module.exports = async function handler(req, res) {
 
     for (const fb of newFeedback) {
       try {
+        const userName = fb.slack_user_name || fb.slack_user || "Unknown";
+
         // Ask Sofia to triage
         const triageRaw = await ask(
           SOFIA_SYSTEM_PROMPT,
-          `Feedback from ${fb.slack_user_name}: "${fb.message_text}"`
+          `Feedback from ${userName}: "${fb.message}"`
         );
 
         // Parse Sofia's response
@@ -94,7 +96,7 @@ module.exports = async function handler(req, res) {
           `${priorityEmoji[triage.priority] || "⚪"} *${triage.title}*`,
           `*Category:* ${triage.category} | *Priority:* ${triage.priority}`,
           `*Summary:* ${triage.summary}`,
-          `*Original feedback:* "${fb.message_text}" — ${fb.slack_user_name}`,
+          `*Original feedback:* "${fb.message}" — ${userName}`,
           ``,
           `_Reply "approved" to create a GitHub issue and Cursor prompt._`,
           `_Reply "dismissed" to skip._`,

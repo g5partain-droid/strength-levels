@@ -78,7 +78,7 @@ module.exports = async function handler(req, res) {
         const { data: existing } = await supabase
           .from("feedback")
           .select("id")
-          .eq("slack_message_ts", event.ts)
+          .eq("slack_ts", event.ts)
           .single();
 
         if (existing) {
@@ -107,13 +107,13 @@ module.exports = async function handler(req, res) {
         );
         console.log("Dawn: slack post result:", slackResult.ok, slackResult.error || "");
 
-        // Log to Supabase
+        // Log to Supabase (matching actual feedback table columns)
         await supabase.from("feedback").insert({
-          slack_message_ts: event.ts,
+          slack_ts: event.ts,
           slack_channel_id: event.channel,
-          slack_user_id: event.user,
+          slack_user: event.user,
           slack_user_name: userName,
-          message_text: event.text,
+          message: event.text,
           dawn_response: dawnResponse,
           status: "new",
         });
