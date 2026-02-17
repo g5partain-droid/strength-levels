@@ -3,10 +3,6 @@ const { ask } = require("../../lib/anthropic");
 const { getSupabase } = require("../../lib/supabase");
 const { createIssue } = require("../../lib/github");
 
-export const config = {
-  api: { bodyParser: false },
-};
-
 const EMMA_SYSTEM_PROMPT = `You are Emma, an AI engineering lead for the Strength Levels PWA app.
 Your job is to take an approved ticket and create a Cursor-ready implementation prompt.
 
@@ -68,6 +64,8 @@ module.exports = async function handler(req, res) {
     if (body.type === "event_callback") {
       const event = body.event;
 
+      console.log("Emma event:", event.type, "channel:", event.channel, "thread_ts:", event.thread_ts);
+
       // Only process thread replies (not top-level messages)
       if (
         event.type !== "message" ||
@@ -107,6 +105,10 @@ module.exports = async function handler(req, res) {
     console.error("Emma handler error:", err);
     return res.status(500).json({ error: "Internal error" });
   }
+};
+
+module.exports.config = {
+  api: { bodyParser: false },
 };
 
 async function processApproval(event) {

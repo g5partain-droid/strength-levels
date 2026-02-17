@@ -2,11 +2,6 @@ const { verifySlackSignature, postMessage, getUserInfo, getRawBody } = require("
 const { ask } = require("../../lib/anthropic");
 const { getSupabase } = require("../../lib/supabase");
 
-// Vercel needs raw body for signature verification
-export const config = {
-  api: { bodyParser: false },
-};
-
 const DAWN_SYSTEM_PROMPT = `You are Dawn, a warm and supportive AI assistant for the Strength Levels app team. 
 Your job is to acknowledge user feedback with genuine warmth and appreciation.
 
@@ -20,6 +15,7 @@ Guidelines:
 - Don't promise specific timelines or features
 - If they report a bug, empathize and assure them it's being tracked`;
 
+// Disable Vercel body parsing so we can verify Slack signature
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -28,6 +24,8 @@ module.exports = async function handler(req, res) {
   try {
     const rawBody = await getRawBody(req);
     const body = JSON.parse(rawBody);
+
+    console.log("Dawn received event type:", body.type);
 
     // Handle Slack URL verification challenge
     if (body.type === "url_verification") {
@@ -46,6 +44,7 @@ module.exports = async function handler(req, res) {
         rawBody
       )
     ) {
+      console.log("Dawn: signature verification failed");
       return res.status(401).json({ error: "Invalid signature" });
     }
 
@@ -53,21 +52,26 @@ module.exports = async function handler(req, res) {
     if (body.type === "event_callback") {
       const event = body.event;
 
-      // Only process messages in the feedback channel
-      // Ignore bot messages, message edits, and thread replies
+      console.log("Dawn event:", event.type, "channel:", event.channel, "subtype:", event.subtype, "bot_id:", event.bot_id, "thread_ts:", event.thread_ts);
+
+      // Only process messages - ignore bot messages, edits, and thread replies
       if (
         event.type !== "message" ||
         event.subtype ||
         event.bot_id ||
         event.thread_ts
       ) {
+        console.log("Dawn: skipping - filtered out");
         return res.status(200).json({ ok: true });
       }
 
       // Only process messages in the feedback channel
       if (event.channel !== process.env.FEEDBACK_CHANNEL_ID) {
+        console.log("Dawn: skipping - wrong channel. Got:", event.channel, "Expected:", process.env.FEEDBACK_CHANNEL_ID);
         return res.status(200).json({ ok: true });
       }
+
+      console.log("Dawn: processing feedback from", event.user);
 
       // Respond immediately to Slack (3s timeout requirement)
       res.status(200).json({ ok: true });
@@ -84,6 +88,10 @@ module.exports = async function handler(req, res) {
   }
 };
 
+module.exports.config = {
+  api: { bodyParser: false },
+};
+
 async function processFeedback(event) {
   try {
     const supabase = getSupabase();
@@ -95,17 +103,24 @@ async function processFeedback(event) {
       .eq("slack_message_ts", event.ts)
       .single();
 
-    if (existing) return;
+    if (existing) {
+      console.log("Dawn: already processed this message");
+      return;
+    }
 
     // Get user info for a personal touch
     const user = await getUserInfo(process.env.DAWN_BOT_TOKEN, event.user);
     const userName = user?.real_name || user?.name || "there";
+
+    console.log("Dawn: generating response for", userName);
 
     // Generate Dawn's response
     const dawnResponse = await ask(
       DAWN_SYSTEM_PROMPT,
       `Feedback from ${userName}: "${event.text}"`
     );
+
+    console.log("Dawn: posting response to thread");
 
     // Post response in thread
     await postMessage(
@@ -126,7 +141,7 @@ async function processFeedback(event) {
       status: "new",
     });
 
-    console.log(`Dawn processed feedback from ${userName}`);
+    console.log("Dawn: done processing feedback from", userName);
   } catch (err) {
     console.error("Dawn processFeedback error:", err);
   }
