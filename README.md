@@ -1,152 +1,92 @@
-# Strength Levels - Setup Guide
+# Strength Levels Feedback System
 
-## Quick Start (This Weekend!)
+Three-agent Slack feedback pipeline. No Make.com. No polling. Event-driven.
 
-### Option A: Just Download and Use
-The app works immediately with localStorage. Your parents' data will be saved on their device.
+## Agents
 
-1. Download `index.html`, `manifest.json`, `icon-192.png`, `icon-512.png`
-2. Put them in a folder
-3. Open `index.html` in a browser
-4. Add to home screen (works as PWA)
+| Agent | Role | Trigger |
+|-------|------|---------|
+| **Dawn** | Responds warmly to feedback, logs to Supabase | New message in #feedback |
+| **Sofia** | Triages feedback into categorized tickets | Weekly cron (Monday 9am) or manual |
+| **Emma** | Creates Cursor prompts + GitHub Issues | Reply "approved" to Sofia's ticket |
 
-**Limitation**: Data is device-only. If they clear browser data or use a different device, progress is lost.
+## Architecture
 
----
+```
+Slack #feedback → Dawn (Vercel) → Supabase
+                                     ↓
+Cron/Manual → Sofia (Vercel) → Tickets in Supabase → Posts to #tickets
+                                                          ↓
+"approved" reply → Emma (Vercel) → GitHub Issue + Cursor Prompt
+```
 
-### Option B: Deploy to Vercel (Recommended)
-This gives you a URL that auto-updates when you push changes.
+## Setup
 
-#### 1. Create a GitHub repo
+### 1. Supabase Schema
+
+Go to Supabase SQL Editor → paste contents of `supabase/migration.sql` → Run.
+
+### 2. Slack Apps Configuration
+
+For each bot (Dawn, Sofia, Emma), in the Slack App settings:
+
+**Dawn (api.slack.com → Dawn app):**
+- Event Subscriptions → Enable → Request URL: `https://your-vercel-domain.vercel.app/api/slack/dawn`
+- Subscribe to bot events: `message.channels`
+- OAuth Scopes: `chat:write`, `users:read`, `channels:history`
+
+**Sofia:**
+- No event subscriptions needed (triggered by cron/manual)
+- OAuth Scopes: `chat:write`
+
+**Emma (api.slack.com → Emma app):**
+- Event Subscriptions → Enable → Request URL: `https://your-vercel-domain.vercel.app/api/slack/emma`
+- Subscribe to bot events: `message.channels`
+- OAuth Scopes: `chat:write`, `channels:history`
+
+**Important:** Invite all three bots to both #feedback and #tickets channels.
+
+### 3. Get Channel IDs
+
+In Slack, right-click channel name → "View channel details" → scroll to bottom → copy Channel ID.
+
+### 4. Vercel Environment Variables
+
+In Vercel Dashboard → Project Settings → Environment Variables, add all vars from `.env.example`.
+
+### 5. Deploy
+
+Push this folder's contents to your `strength-levels` repo (or the subfolder for the feedback system). Vercel auto-deploys.
+
+### 6. Verify
+
+1. Post in #feedback → Dawn should reply in thread within a few seconds
+2. Hit Sofia manually: `curl -X POST https://your-domain.vercel.app/api/slack/sofia -H "x-cron-secret: YOUR_SECRET"`
+3. Reply "approved" to Sofia's ticket message → Emma creates GitHub Issue
+
+## Manual Sofia Trigger
+
 ```bash
-# In your strength-levels folder
-git init
-git add .
-git commit -m "Initial commit"
-# Create repo on github.com, then:
-git remote add origin https://github.com/YOUR_USERNAME/strength-levels.git
-git push -u origin main
+# Via curl
+curl -X POST https://your-domain.vercel.app/api/slack/sofia \
+  -H "x-cron-secret: your-cron-secret-here"
+
+# Via browser (GET)
+https://your-domain.vercel.app/api/slack/sofia?secret=your-cron-secret-here
 ```
-
-#### 2. Deploy to Vercel
-1. Go to [vercel.com](https://vercel.com)
-2. Sign in with GitHub
-3. Click "New Project"
-4. Import your `strength-levels` repo
-5. Click "Deploy"
-
-Done! You'll get a URL like `strength-levels.vercel.app`
-
-**Benefits**:
-- When you push updates to GitHub, Vercel auto-deploys
-- Your parents don't need to reinstall anything
-- Works on any device via the URL
-
----
-
-### Option C: Add Supabase for Cloud Sync
-This lets Dad and Mom share data and sync across devices.
-
-#### 1. Create Supabase Project
-1. Go to [supabase.com](https://supabase.com)
-2. Create a new project (free tier is fine)
-3. Wait for it to initialize (~2 min)
-
-#### 2. Create the Database Table
-Go to SQL Editor and run:
-
-```sql
-CREATE TABLE user_data (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_key TEXT UNIQUE NOT NULL,
-  data JSONB,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Allow public read/write (for simplicity - this is a family app)
-ALTER TABLE user_data ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow all" ON user_data FOR ALL USING (true);
-```
-
-#### 3. Get Your Credentials
-1. Go to Settings > API
-2. Copy the "Project URL" 
-3. Copy the "anon public" key
-
-#### 4. Update the App
-In `index.html`, find these lines and replace:
-
-```javascript
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-```
-
-With your actual values:
-
-```javascript
-const SUPABASE_URL = 'https://xxxxx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGc...your-key...';
-```
-
-#### 5. Deploy
-Push to GitHub → Vercel auto-deploys → Done!
-
-Now Dad and Mom's workouts sync to the cloud. If they use different devices, data stays in sync.
-
----
 
 ## File Structure
 
 ```
-strength-levels/
-├── index.html      # Main app
-├── manifest.json   # PWA manifest
-├── icon-192.png    # App icon (192x192)
-├── icon-512.png    # App icon (512x512)
-└── README.md       # This file
+api/slack/
+  dawn.js    — Event handler: feedback → warm reply + log
+  sofia.js   — Cron/manual: triage new feedback → tickets
+  emma.js    — Event handler: "approved" → GitHub Issue
+lib/
+  anthropic.js — Claude API client
+  github.js    — GitHub Issue creation
+  slack.js     — Signature verification + posting
+  supabase.js  — Supabase client
+supabase/
+  migration.sql — Database schema
 ```
-
-## Adding to Home Screen (PWA)
-
-### iPhone/iPad
-1. Open the URL in Safari
-2. Tap the Share button
-3. Tap "Add to Home Screen"
-4. Name it "Strength" and tap Add
-
-### Android
-1. Open the URL in Chrome
-2. Tap the three dots menu
-3. Tap "Add to Home screen"
-4. Confirm
-
----
-
-## Updating Videos
-
-To change a video, find the exercise in `index.html` and update the `id` or `search`:
-
-```javascript
-videos: [
-  { id: 'JlwC2kOHEUU', title: 'Chair Sit-to-Stand', channel: 'HASfit' },
-  // To change: go to YouTube, find a video, copy the ID from the URL
-  // https://www.youtube.com/watch?v=ABC123xyz → id is 'ABC123xyz'
-]
-```
-
-For exercises without a specific video, use search:
-```javascript
-{ search: 'wall pushup seniors form', title: 'Wall Push-Up' }
-```
-
----
-
-## Support
-
-This app uses:
-- Vanilla HTML/CSS/JS (no build step needed)
-- Supabase for cloud storage (optional)
-- PWA for installability
-
-Everything is in one HTML file for simplicity.

@@ -1,0 +1,10 @@
+{
+  "name": "sl-feedback-system",
+  "version": "1.0.0",
+  "description": "Strength Levels PWA Feedback System - Dawn/Sofia/Emma agents",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@supabase/supabase-js": "^2.49.0"
+  }
+}
