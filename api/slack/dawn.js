@@ -15,17 +15,20 @@ Guidelines:
 - Don't promise specific timelines or features
 - If they report a bug, empathize and assure them it's being tracked`;
 
-// Disable Vercel body parsing so we can verify Slack signature
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // Ignore Slack retries to prevent duplicate processing
+  if (req.headers["x-slack-retry-num"]) {
+    console.log("Dawn: ignoring Slack retry");
+    return res.status(200).json({ ok: true });
+  }
+
   try {
     const rawBody = await getRawBody(req);
     const body = JSON.parse(rawBody);
-
-    console.log("Dawn received event type:", body.type);
 
     // Handle Slack URL verification challenge
     if (body.type === "url_verification") {
@@ -44,15 +47,13 @@ module.exports = async function handler(req, res) {
         rawBody
       )
     ) {
-      console.log("Dawn: signature verification failed");
       return res.status(401).json({ error: "Invalid signature" });
     }
 
-    // Handle event callback
     if (body.type === "event_callback") {
       const event = body.event;
 
-      console.log("Dawn event:", event.type, "channel:", event.channel, "subtype:", event.subtype, "bot_id:", event.bot_id, "thread_ts:", event.thread_ts);
+      console.log("Dawn event:", event.type, "channel:", event.channel, "bot_id:", event.bot_id);
 
       // Only process messages - ignore bot messages, edits, and thread replies
       if (
@@ -61,24 +62,68 @@ module.exports = async function handler(req, res) {
         event.bot_id ||
         event.thread_ts
       ) {
-        console.log("Dawn: skipping - filtered out");
         return res.status(200).json({ ok: true });
       }
 
       // Only process messages in the feedback channel
       if (event.channel !== process.env.FEEDBACK_CHANNEL_ID) {
-        console.log("Dawn: skipping - wrong channel. Got:", event.channel, "Expected:", process.env.FEEDBACK_CHANNEL_ID);
         return res.status(200).json({ ok: true });
       }
 
-      console.log("Dawn: processing feedback from", event.user);
+      // DO ALL PROCESSING BEFORE RESPONDING (Vercel kills function after response)
+      try {
+        const supabase = getSupabase();
 
-      // Respond immediately to Slack (3s timeout requirement)
-      res.status(200).json({ ok: true });
+        // Idempotency check
+        const { data: existing } = await supabase
+          .from("feedback")
+          .select("id")
+          .eq("slack_message_ts", event.ts)
+          .single();
 
-      // Process async
-      await processFeedback(event);
-      return;
+        if (existing) {
+          console.log("Dawn: already processed");
+          return res.status(200).json({ ok: true });
+        }
+
+        // Get user info
+        const user = await getUserInfo(process.env.DAWN_BOT_TOKEN, event.user);
+        const userName = user?.real_name || user?.name || "there";
+        console.log("Dawn: generating response for", userName);
+
+        // Generate Dawn's response
+        const dawnResponse = await ask(
+          DAWN_SYSTEM_PROMPT,
+          `Feedback from ${userName}: "${event.text}"`
+        );
+        console.log("Dawn: got response, posting to thread");
+
+        // Post response in thread
+        const slackResult = await postMessage(
+          process.env.DAWN_BOT_TOKEN,
+          event.channel,
+          dawnResponse,
+          event.ts
+        );
+        console.log("Dawn: slack post result:", slackResult.ok, slackResult.error || "");
+
+        // Log to Supabase
+        await supabase.from("feedback").insert({
+          slack_message_ts: event.ts,
+          slack_channel_id: event.channel,
+          slack_user_id: event.user,
+          slack_user_name: userName,
+          message_text: event.text,
+          dawn_response: dawnResponse,
+          status: "new",
+        });
+
+        console.log("Dawn: done!");
+      } catch (processErr) {
+        console.error("Dawn processing error:", processErr);
+      }
+
+      return res.status(200).json({ ok: true });
     }
 
     return res.status(200).json({ ok: true });
@@ -91,58 +136,3 @@ module.exports = async function handler(req, res) {
 module.exports.config = {
   api: { bodyParser: false },
 };
-
-async function processFeedback(event) {
-  try {
-    const supabase = getSupabase();
-
-    // Check if we already processed this message (idempotency)
-    const { data: existing } = await supabase
-      .from("feedback")
-      .select("id")
-      .eq("slack_message_ts", event.ts)
-      .single();
-
-    if (existing) {
-      console.log("Dawn: already processed this message");
-      return;
-    }
-
-    // Get user info for a personal touch
-    const user = await getUserInfo(process.env.DAWN_BOT_TOKEN, event.user);
-    const userName = user?.real_name || user?.name || "there";
-
-    console.log("Dawn: generating response for", userName);
-
-    // Generate Dawn's response
-    const dawnResponse = await ask(
-      DAWN_SYSTEM_PROMPT,
-      `Feedback from ${userName}: "${event.text}"`
-    );
-
-    console.log("Dawn: posting response to thread");
-
-    // Post response in thread
-    await postMessage(
-      process.env.DAWN_BOT_TOKEN,
-      event.channel,
-      dawnResponse,
-      event.ts // reply in thread
-    );
-
-    // Log to Supabase
-    await supabase.from("feedback").insert({
-      slack_message_ts: event.ts,
-      slack_channel_id: event.channel,
-      slack_user_id: event.user,
-      slack_user_name: userName,
-      message_text: event.text,
-      dawn_response: dawnResponse,
-      status: "new",
-    });
-
-    console.log("Dawn: done processing feedback from", userName);
-  } catch (err) {
-    console.error("Dawn processFeedback error:", err);
-  }
-}
